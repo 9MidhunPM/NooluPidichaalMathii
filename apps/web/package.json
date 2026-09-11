@@ -6,8 +6,21 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "check": "node --check next.config.mjs",
+    "dev": "next dev --turbopack",
+    "start": "next start",
+    "check": "tsc --noEmit",
     "test": "node --test",
-    "build": "node -e \"throw new Error('Web application has not been bootstrapped yet.')\""
+    "build": "next build"
+  },
+  "dependencies": {
+    "next": "^16.3.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^5.9.3"
   }
 }
