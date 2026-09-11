@@ -17,7 +17,10 @@ def test_assign_metro_semantics_creates_a_contract_valid_graph() -> None:
     graph = assign_metro_semantics(a_line_topology(), seed=0)
 
     assert isinstance(graph, MetroGraph)
-    assert [node.name for node in graph.nodes] == ["Coconut Junction", "Curry Sector"]
+    assert [node.name for node in graph.nodes] == [
+        "Edappally Appam Exchange",
+        "Kaloor Kadala Junction",
+    ]
     assert [node.kind for node in graph.nodes] == ["terminal", "terminal"]
     assert graph.lines[0].name == "Nool Express"
     assert graph.edges[0].line_id == graph.lines[0].id
@@ -59,3 +62,25 @@ def test_assign_metro_semantics_splits_dense_curated_edges_into_services() -> No
     assert len(graph.lines) == 2
     assert {edge.line_id for edge in graph.edges} == {"line-1", "line-2"}
     assert {line.elevation_level for line in graph.lines} == {0, 1}
+
+
+def test_assign_metro_semantics_generates_unique_names_for_dense_maps() -> None:
+    nodes = tuple(
+        TopologyNode(f"node-{index}", ImagePoint(x=index, y=0), 2)
+        for index in range(12)
+    )
+    edges = tuple(
+        TopologyEdge(
+            f"edge-{index}",
+            f"node-{index}",
+            f"node-{index + 1}",
+            (ImagePoint(x=index, y=0), ImagePoint(x=index + 1, y=0)),
+            1,
+        )
+        for index in range(11)
+    )
+
+    graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
+
+    assert len({node.name for node in graph.nodes}) == len(graph.nodes)
+    assert graph.nodes[8].name == "Edappally Appam Exchange 2"

@@ -14,14 +14,14 @@ LINE_NAMES = (
     "Steam Service",
 )
 STATION_NAMES = (
-    "Coconut Junction",
-    "Curry Sector",
-    "Puttu Point",
-    "Sambar Square",
-    "Chutney Crossing",
-    "Appam Annex",
-    "Kattan Terminal",
-    "Banana Leaf Bay",
+    "Edappally Appam Exchange",
+    "Kaloor Kadala Junction",
+    "Vyttila Vermicelli",
+    "Palarivattom Puttu Port",
+    "Maharaja Masala Mile",
+    "Aluva Ada Terminal",
+    "JLN Jaggery Junction",
+    "MG Road Muringa",
 )
 
 
@@ -145,8 +145,16 @@ def _node_confidence(degree: int) -> float:
 
 
 def _station_name(index: int, seed: int) -> str:
-    return STATION_NAMES[(seed + index) % len(STATION_NAMES)]
+    return _unique_display_name(STATION_NAMES, index, seed)
 
 
 def _line_name(index: int, seed: int) -> str:
-    return LINE_NAMES[(seed + index) % len(LINE_NAMES)]
+    return _unique_display_name(LINE_NAMES, index, seed)
+
+
+def _unique_display_name(names: tuple[str, ...], index: int, seed: int) -> str:
+    """Return a deterministic, collision-safe display name for a map."""
+    absolute_index = seed + index
+    base = names[absolute_index % len(names)]
+    cycle = absolute_index // len(names)
+    return base if cycle == 0 else f"{base} {cycle + 1}"
