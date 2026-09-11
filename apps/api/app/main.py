@@ -1,12 +1,14 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import Database, create_database
+from app.maps import persist_processed_map
+from app.pipeline import process_image
 from app.settings import ApiSettings
 
 
@@ -57,6 +59,42 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
             )
 
         return JSONResponse(content={"status": "ok"})
+
+    @app.post("/api/maps", status_code=201)
+    async def create_map(image: UploadFile = File(...)) -> JSONResponse:
+        """Process and persist one untrusted image upload as a shareable metro map."""
+        image_data = await image.read(resolved_settings.max_upload_bytes + 1)
+        try:
+            processed = process_image(image_data, resolved_settings)
+        except ValueError as error:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "code": getattr(error, "code", "processing_failed"),
+                    "message": str(error),
+                },
+            )
+
+        database: Database | None = app.state.database
+        if database is None:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "not_ready", "code": "database_not_configured"},
+            )
+
+        record = await persist_processed_map(
+            processed,
+            database.sessions,
+            resolved_settings,
+        )
+        return JSONResponse(
+            status_code=201,
+            content={
+                "id": str(record.id),
+                "schema_version": record.schema_version,
+                "share_url": f"{resolved_settings.public_base_url}map/{record.id}",
+            },
+        )
 
     return app
 
