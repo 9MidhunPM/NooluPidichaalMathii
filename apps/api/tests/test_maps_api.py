@@ -134,6 +134,30 @@ async def test_route_map_returns_a_stored_graph_route() -> None:
     assert response.json()["node_ids"][-1] == destination_id
 
 
+@pytest.mark.anyio
+async def test_get_map_image_does_not_expose_the_volume_path(tmp_path) -> None:
+    settings = ApiSettings(upload_dir=tmp_path)
+    record = new_map_record(
+        process_image(a_valid_upload(), settings),
+        settings,
+        "private-volume-file.png",
+    )
+    (tmp_path / record.image_path).write_bytes(b"normalized-png")
+    app = create_app(settings)
+    transport = httpx.ASGITransport(app=app)
+    async with app.router.lifespan_context(app):
+        app.state.database = FakeDatabase(FakeSession({record.id: record}))  # type: ignore[assignment]
+        async with httpx.AsyncClient(
+            transport=transport,
+            base_url="http://testserver",
+        ) as client:
+            response = await client.get(f"/api/maps/{record.id}/image")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+    assert response.content == b"normalized-png"
+
+
 def a_valid_upload() -> bytes:
     output = BytesIO()
     image = Image.new("RGB", (100, 100), color="white")

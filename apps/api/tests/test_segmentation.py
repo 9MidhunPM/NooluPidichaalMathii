@@ -31,6 +31,21 @@ def test_segment_extracts_dark_strands_deterministically() -> None:
     assert np.array_equal(first.mask, second.mask)
 
 
+def test_segment_prefers_pale_low_saturation_strands_over_colored_background() -> None:
+    image = Image.new("RGB", (100, 100), color="#2f7f35")
+    draw = ImageDraw.Draw(image)
+    draw.line([(10, 30), (90, 30)], fill="#f7f0dd", width=7)
+    draw.line([(15, 70), (85, 70)], fill="#f7f0dd", width=7)
+    output = BytesIO()
+    image.save(output, format="PNG")
+
+    result = segment(NormalizedImage(output.getvalue(), "image/png", 100, 100))
+
+    assert result.mask[30, 50]
+    assert result.mask[70, 50]
+    assert not result.mask[0, 0]
+
+
 def test_segment_rejects_images_without_enough_foreground() -> None:
     output = BytesIO()
     Image.new("RGB", (100, 100), color="white").save(output, format="PNG")
