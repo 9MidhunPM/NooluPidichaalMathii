@@ -1,6 +1,7 @@
 {
   "name": "@noolu/web",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "engines": {
     "node": ">=22.0.0"
@@ -9,7 +10,7 @@
     "dev": "next dev --turbopack",
     "start": "next start",
     "check": "tsc --noEmit",
-    "test": "node --test",
+    "test": "vitest run",
     "build": "next build"
   },
   "dependencies": {
