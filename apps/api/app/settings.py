@@ -6,6 +6,7 @@ from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 MAX_MVP_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_MVP_IMAGE_DIMENSION = 4096
 
 
 class ApiSettings(BaseSettings):
@@ -20,6 +21,11 @@ class ApiSettings(BaseSettings):
         default=MAX_MVP_UPLOAD_BYTES,
         ge=1,
         le=MAX_MVP_UPLOAD_BYTES,
+    )
+    max_image_dimension: int = Field(
+        default=MAX_MVP_IMAGE_DIMENSION,
+        ge=1,
+        le=MAX_MVP_IMAGE_DIMENSION,
     )
     retention_days: int = Field(default=7, ge=1)
     processing_timeout_seconds: int = Field(default=30, ge=1)
