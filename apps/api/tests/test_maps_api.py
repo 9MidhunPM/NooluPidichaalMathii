@@ -100,6 +100,40 @@ async def test_get_map_returns_a_saved_public_graph_without_image_path() -> None
     assert "image_path" not in response.json()
 
 
+@pytest.mark.anyio
+async def test_route_map_returns_a_stored_graph_route() -> None:
+    settings = ApiSettings()
+    record = new_map_record(
+        process_image(a_valid_upload(), settings),
+        settings,
+        "private-volume-file.png",
+    )
+    graph_nodes = record.graph["nodes"]
+    assert isinstance(graph_nodes, list)
+    origin_id = graph_nodes[0]["id"]
+    destination_id = graph_nodes[-1]["id"]
+    assert isinstance(origin_id, str)
+    assert isinstance(destination_id, str)
+
+    app = create_app()
+    transport = httpx.ASGITransport(app=app)
+    async with app.router.lifespan_context(app):
+        app.state.database = FakeDatabase(FakeSession({record.id: record}))  # type: ignore[assignment]
+        async with httpx.AsyncClient(
+            transport=transport,
+            base_url="http://testserver",
+        ) as client:
+            response = await client.post(
+                f"/api/maps/{record.id}/route",
+                json={"origin_id": origin_id, "destination_id": destination_id},
+            )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+    assert response.json()["node_ids"][0] == origin_id
+    assert response.json()["node_ids"][-1] == destination_id
+
+
 def a_valid_upload() -> bytes:
     output = BytesIO()
     image = Image.new("RGB", (100, 100), color="white")

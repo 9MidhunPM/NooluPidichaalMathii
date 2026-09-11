@@ -4,13 +4,25 @@ from uuid import UUID
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.contracts import MetroGraph
 from app.db.session import Database, create_database
 from app.maps import get_map_record, persist_processed_map
 from app.pipeline import process_image
+from app.routing import find_route
 from app.settings import ApiSettings
+
+
+class RouteRequest(BaseModel):
+    """Station choices supplied by the accessible route planner."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    origin_id: str = Field(min_length=1, max_length=128)
+    destination_id: str = Field(min_length=1, max_length=128)
 
 
 def create_app(settings: ApiSettings | None = None) -> FastAPI:
@@ -125,6 +137,41 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
                 "image_height": record.image_height,
                 "visual_seed": record.visual_seed,
                 "graph": record.graph,
+            },
+        )
+
+    @app.post("/api/maps/{map_id}/route")
+    async def route_map(map_id: UUID, request: RouteRequest) -> JSONResponse:
+        """Calculate a deterministic route from the stored graph only."""
+        database: Database | None = app.state.database
+        if database is None:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "not_ready", "code": "database_not_configured"},
+            )
+
+        record = await get_map_record(database.sessions, map_id)
+        if record is None:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": "map_not_found",
+                    "message": "This map is unavailable.",
+                },
+            )
+
+        route = find_route(
+            MetroGraph.model_validate(record.graph),
+            request.origin_id,
+            request.destination_id,
+        )
+        return JSONResponse(
+            content={
+                "status": route.status,
+                "node_ids": list(route.node_ids),
+                "edge_ids": list(route.edge_ids),
+                "total_length_px": route.total_length_px,
+                "warning": route.warning,
             },
         )
 
