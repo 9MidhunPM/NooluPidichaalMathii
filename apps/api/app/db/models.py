@@ -32,6 +32,7 @@ class MapRecord(Base):
     schema_version: Mapped[int] = mapped_column(Integer, nullable=False)
     pipeline_version: Mapped[str] = mapped_column(String(length=64), nullable=False)
     image_path: Mapped[str] = mapped_column(String(length=512), nullable=False)
+    skeleton_path: Mapped[str | None] = mapped_column(String(length=512), nullable=True)
     image_width: Mapped[int] = mapped_column(Integer, nullable=False)
     image_height: Mapped[int] = mapped_column(Integer, nullable=False)
     settings: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
