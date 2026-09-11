@@ -65,11 +65,19 @@ cd apps/api && uv sync
 #### Run
 
 ```bash
+# Terminal 0: starts PostgreSQL locally; data is retained in a named volume.
+docker compose -f compose.dev.yml up -d postgres
+
 # Terminal 1
 pnpm --filter @noolu/web dev
 
 # Terminal 2
-cd apps/api && uv run uvicorn app.main:app --reload
+cd apps/api
+cp .env.example .env
+# Change DATABASE_URL to use localhost when the API runs outside Compose.
+# DATABASE_URL=postgresql+asyncpg://noolu:change-me@localhost:5432/noolu
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload
 ```
 
 #### Verify
@@ -79,6 +87,11 @@ pnpm --filter @noolu/web run check
 pnpm --filter @noolu/web run test
 cd apps/api && uv run ruff check app tests && uv run mypy && uv run pytest
 ```
+
+To stop the local database without removing its data, run
+`docker compose -f compose.dev.yml stop postgres`. Use
+`docker compose -f compose.dev.yml down -v` only when deliberately discarding
+local development data.
 
 ## Project Documentation
 
