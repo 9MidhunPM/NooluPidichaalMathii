@@ -25,6 +25,8 @@ def test_new_map_record_persists_reproducible_processing_metadata() -> None:
     assert record.image_path == "45b88f7a.png"
     assert record.graph["schema_version"] == 1
     assert record.settings["segmentation_strategy"] == "otsu-v1"
+    assert record.visual_seed == processed.visual_seed
+    assert 0 <= record.visual_seed <= 2**32 - 1
     assert record.expires_at == created_at + timedelta(days=7)
 
 
