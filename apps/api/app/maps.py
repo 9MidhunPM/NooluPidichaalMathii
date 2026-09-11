@@ -55,3 +55,12 @@ async def persist_processed_map(
         delete_normalized_image(image_path, settings.upload_dir)
         raise
     return record
+
+
+async def get_map_record(
+    sessions: async_sessionmaker[AsyncSession],
+    map_id: UUID,
+) -> MapRecord | None:
+    """Retrieve one persisted map without rerunning the vision pipeline."""
+    async with sessions() as session:
+        return await session.get(MapRecord, map_id)
