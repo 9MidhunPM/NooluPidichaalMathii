@@ -35,6 +35,9 @@ services:
       API_ORIGIN: http://api:8000
     depends_on:
       - api
+    networks:
+      - default
+      - dokploy-network
     labels:
       - traefik.enable=true
       - traefik.http.routers.idiyappam.rule=Host(`idiyappam.midhunpm.in`)
@@ -45,3 +48,7 @@ services:
 volumes:
   postgres_data:
   uploads_data:
+
+networks:
+  dokploy-network:
+    external: true
