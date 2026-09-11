@@ -2,12 +2,13 @@
 
 import { ProcessingReveal } from "./processing-reveal";
 import { ServiceBoard } from "./service-board";
+import { LandingPage } from "./landing-page";
 import "./services.css";
 
 import { Html, Line as DreiLine, OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { BufferGeometry, CatmullRomCurve3, DoubleSide, Float32BufferAttribute, Group, TubeGeometry, Vector3 } from "three";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 type Point = { x: number; y: number };
 type Node = { id: string; name: string; position: Point; kind: "terminal" | "station" | "interchange" };
@@ -131,7 +132,7 @@ export default function HomePage({ initialMapId }: { initialMapId?: string }): R
     }
   }, [destination, map, origin]);
 
-  if (!map) return <main className="control-room"><header className="topbar"><div className="brand-mark">≋</div><div><p className="wordmark">NOOLU PIDICHAAL MATHI <span>· NMRL</span></p><p className="brand-tagline">Vazhi ariyille? Noolu pidichaal mathi.</p></div><p className="system-status"><span />NMRL services needlessly operational</p></header><section className="launch"><p className="eyebrow">NOOLU METRO RAIL LIMITED</p><h1>From idiyappam to an unnecessarily serious metro.</h1><p>{message}</p>{pendingImage ? <img className="launch-input-preview" src={pendingImage} alt="Uploaded idiyappam being processed" /> : null}<div className="launch-actions"><label className="gold-button">Upload your idiyappam<input aria-label="Upload idiyappam photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={(event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file) void upload(file); }} hidden /></label><button className="demo-button" onClick={() => void useDemo()}><img src="/demo/idiyappam-demo.png" alt="NMRL demo idiyappam" /><span>Use the official NMRL demo breakfast →</span></button></div></section></main>;
+  if (!map) return <LandingPage message={message} pendingImage={pendingImage} onUpload={(file) => void upload(file)} onDemo={() => void useDemo()} />;
 
   if (revealStage) return <ProcessingReveal map={map} stage={revealStage} />;
   const active = new Set(route?.edge_ids ?? []), imageUrl = `/backend/api/maps/${map.id}/image`, names = namesFor(map.graph), toggle = (key: LayerKey) => setLayers((current) => ({ ...current, [key]: !current[key] }));

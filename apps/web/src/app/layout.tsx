@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Noolu Pidichaal Mathi",
-  description: "Vazhi ariyille? Noolu pidichaal mathi.",
+  title: "Noolu Pidichaal Mathi — An Idiyappam Public Transportation System",
+  description: "Upload idiyappam, extract its visible noodle network, and explore it as a cinematic 3D metro. Vazhi ariyille? Noolu pidichaal mathi.",
 };
 
 interface RootLayoutProps {
