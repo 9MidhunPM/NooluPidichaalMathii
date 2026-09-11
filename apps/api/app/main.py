@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from uuid import UUID
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
@@ -7,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.session import Database, create_database
-from app.maps import persist_processed_map
+from app.maps import get_map_record, persist_processed_map
 from app.pipeline import process_image
 from app.settings import ApiSettings
 
@@ -93,6 +94,37 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
                 "id": str(record.id),
                 "schema_version": record.schema_version,
                 "share_url": f"{resolved_settings.public_base_url}map/{record.id}",
+            },
+        )
+
+    @app.get("/api/maps/{map_id}")
+    async def get_map(map_id: UUID) -> JSONResponse:
+        """Return a stored map's public graph without rerunning processing."""
+        database: Database | None = app.state.database
+        if database is None:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "not_ready", "code": "database_not_configured"},
+            )
+
+        record = await get_map_record(database.sessions, map_id)
+        if record is None:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": "map_not_found",
+                    "message": "This map is unavailable.",
+                },
+            )
+        return JSONResponse(
+            content={
+                "id": str(record.id),
+                "schema_version": record.schema_version,
+                "pipeline_version": record.pipeline_version,
+                "image_width": record.image_width,
+                "image_height": record.image_height,
+                "visual_seed": record.visual_seed,
+                "graph": record.graph,
             },
         )
 
