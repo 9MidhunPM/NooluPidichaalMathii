@@ -49,3 +49,16 @@ def test_extract_graph_rejects_a_loop_without_a_visible_route() -> None:
         extract_graph(SkeletonResult(pixels=pixels))
 
     assert error.value.code == "graph_no_visible_edges"
+
+
+def test_extract_graph_curates_a_dense_visible_component() -> None:
+    pixels = np.zeros((80, 80), dtype=bool)
+    for coordinate in range(5, 75, 6):
+        pixels[coordinate, 5:75] = True
+        pixels[5:75, coordinate] = True
+
+    graph = extract_graph(SkeletonResult(pixels=pixels))
+
+    assert len(graph.nodes) == 10
+    assert len(graph.edges) == 9
+    assert max(len(edge.points) for edge in graph.edges) < 80

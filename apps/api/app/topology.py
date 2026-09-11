@@ -4,12 +4,15 @@ from collections import deque
 from dataclasses import dataclass
 from math import hypot
 
+import cv2
 import numpy as np
 
 from app.contracts import ImagePoint
 from app.skeleton import SkeletonResult
 
 Pixel = tuple[int, int]
+MAX_RAW_TOPOLOGY_NODES = 96
+CURATED_STATION_COUNT = 10
 
 
 class TopologyError(ValueError):
@@ -114,7 +117,146 @@ def extract_graph(skeleton: SkeletonResult) -> TopologyGraph:
             "The visible noodle paths do not form a route between stations.",
         )
 
-    return TopologyGraph(nodes=tuple(nodes), edges=tuple(edges))
+    graph = TopologyGraph(nodes=tuple(nodes), edges=tuple(edges))
+    if len(graph.nodes) > MAX_RAW_TOPOLOGY_NODES:
+        return _curate_dense_skeleton(skeleton)
+    return graph
+
+
+def _curate_dense_skeleton(skeleton: SkeletonResult) -> TopologyGraph:
+    """Make a small, image-supported navigation graph from a dense noodle tangle."""
+    component = _largest_component(skeleton.pixels)
+    if len(component) < 2:
+        raise TopologyError(
+            "graph_no_primary_component",
+            "The visible noodle paths do not form a primary network.",
+        )
+
+    anchors = _spread_anchors(component, min(CURATED_STATION_COUNT, len(component)))
+    paths: list[tuple[Pixel, ...]] = []
+    degrees = [0 for _ in anchors]
+    connected = [anchors[0]]
+    for anchor_index, anchor in enumerate(anchors[1:], start=1):
+        path, existing_index = _shortest_path_to_any(anchor, connected, component)
+        paths.append(path)
+        degrees[anchor_index] += 1
+        degrees[existing_index] += 1
+        connected.append(anchor)
+
+    nodes = tuple(
+        TopologyNode(
+            id=f"node-{index}",
+            position=ImagePoint(x=pixel[1], y=pixel[0]),
+            degree=degrees[index - 1],
+        )
+        for index, pixel in enumerate(anchors, start=1)
+    )
+    edges = tuple(
+        TopologyEdge(
+            id=f"edge-{index}",
+            from_node_id=f"node-{existing_anchor + 1}",
+            to_node_id=f"node-{index + 1}",
+            points=tuple(ImagePoint(x=x, y=y) for y, x in _simplify_path(path)),
+            visible_length_px=_path_length(path),
+        )
+        for index, (path, existing_anchor) in enumerate(
+            (
+                (path, _nearest_anchor_index(path[-1], anchors[:edge_index]))
+                for edge_index, path in enumerate(paths, start=1)
+            ),
+            start=1,
+        )
+    )
+    return TopologyGraph(nodes=nodes, edges=edges)
+
+
+def _largest_component(pixels: np.ndarray) -> set[Pixel]:
+    remaining = _foreground_pixels(pixels)
+    largest: set[Pixel] = set()
+    while remaining:
+        start = min(remaining)
+        component = {start}
+        queue = deque((start,))
+        remaining.remove(start)
+        while queue:
+            pixel = queue.popleft()
+            for neighbor in _neighbors(pixel, pixels):
+                if neighbor in remaining:
+                    remaining.remove(neighbor)
+                    component.add(neighbor)
+                    queue.append(neighbor)
+        if len(component) > len(largest):
+            largest = component
+    return largest
+
+
+def _spread_anchors(component: set[Pixel], count: int) -> list[Pixel]:
+    """Choose stable source points that cover the visible primary component."""
+    ordered = sorted(component)
+    centre_y = sum(y for y, _ in ordered) / len(ordered)
+    centre_x = sum(x for _, x in ordered) / len(ordered)
+    anchors = [
+        min(
+            ordered,
+            key=lambda pixel: (pixel[0] - centre_y) ** 2
+            + (pixel[1] - centre_x) ** 2,
+        )
+    ]
+    while len(anchors) < count:
+        anchors.append(
+            max(
+                ordered,
+                key=lambda pixel: min(
+                    (pixel[0] - anchor[0]) ** 2 + (pixel[1] - anchor[1]) ** 2
+                    for anchor in anchors
+                ),
+            )
+        )
+    return anchors
+
+
+def _shortest_path_to_any(
+    start: Pixel, targets: list[Pixel], component: set[Pixel]
+) -> tuple[tuple[Pixel, ...], int]:
+    target_indices = {pixel: index for index, pixel in enumerate(targets)}
+    queue = deque((start,))
+    previous: dict[Pixel, Pixel | None] = {start: None}
+    while queue:
+        current = queue.popleft()
+        if current in target_indices:
+            path = [current]
+            while previous[path[-1]] is not None:
+                parent = previous[path[-1]]
+                assert parent is not None
+                path.append(parent)
+            return tuple(reversed(path)), target_indices[current]
+        y, x = current
+        for neighbor_y in range(y - 1, y + 2):
+            for neighbor_x in range(x - 1, x + 2):
+                neighbor = (neighbor_y, neighbor_x)
+                if neighbor in component and neighbor not in previous:
+                    previous[neighbor] = current
+                    queue.append(neighbor)
+    raise TopologyError(
+        "graph_disconnected", "The visible noodle paths do not connect."
+    )
+
+
+def _nearest_anchor_index(pixel: Pixel, anchors: list[Pixel]) -> int:
+    return min(
+        range(len(anchors)),
+        key=lambda index: (pixel[0] - anchors[index][0]) ** 2
+        + (pixel[1] - anchors[index][1]) ** 2,
+    )
+
+
+def _simplify_path(path: tuple[Pixel, ...]) -> tuple[Pixel, ...]:
+    """Reduce render payload while staying within two source pixels of a route."""
+    coordinates = np.array([(x, y) for y, x in path], dtype=np.float32).reshape(
+        -1, 1, 2
+    )
+    simplified = cv2.approxPolyDP(coordinates, epsilon=2.0, closed=False)
+    return tuple((int(y), int(x)) for x, y in simplified.reshape(-1, 2))
 
 
 def _foreground_pixels(pixels: np.ndarray) -> set[Pixel]:
