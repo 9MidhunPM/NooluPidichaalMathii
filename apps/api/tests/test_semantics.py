@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from app.contracts import MetroGraph
+from app.contracts import ImagePoint, MetroGraph
 from app.semantics import assign_metro_semantics
 from app.skeleton import SkeletonResult
-from app.topology import extract_graph
+from app.topology import TopologyEdge, TopologyGraph, TopologyNode, extract_graph
 
 
 def a_line_topology():
@@ -36,3 +36,26 @@ def test_assign_metro_semantics_is_stable_for_the_same_seed() -> None:
 def test_assign_metro_semantics_rejects_negative_seeds() -> None:
     with pytest.raises(ValueError, match="non-negative"):
         assign_metro_semantics(a_line_topology(), seed=-1)
+
+
+def test_assign_metro_semantics_splits_dense_curated_edges_into_services() -> None:
+    nodes = tuple(
+        TopologyNode(f"node-{index}", ImagePoint(x=index, y=0), 2)
+        for index in range(10)
+    )
+    edges = tuple(
+        TopologyEdge(
+            f"edge-{index}",
+            f"node-{index}",
+            f"node-{index + 1}",
+            (ImagePoint(x=index, y=0), ImagePoint(x=index + 1, y=0)),
+            1,
+        )
+        for index in range(1, 9)
+    )
+
+    graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
+
+    assert len(graph.lines) == 2
+    assert {edge.line_id for edge in graph.edges} == {"line-1", "line-2"}
+    assert {line.elevation_level for line in graph.lines} == {0, 1}
