@@ -25,6 +25,7 @@ class MetroNode(BaseModel):
 
     id: Annotated[str, Field(min_length=1, max_length=128)]
     kind: NodeKind
+    name: Annotated[str, Field(min_length=1, max_length=128)]
     position: ImagePoint
     confidence: Annotated[float, Field(ge=0, le=1)]
     component_id: Annotated[str, Field(min_length=1, max_length=128)]

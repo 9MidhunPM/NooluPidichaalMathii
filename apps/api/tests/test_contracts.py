@@ -11,6 +11,7 @@ def valid_graph() -> dict[str, object]:
             {
                 "id": "station-a",
                 "kind": "terminal",
+                "name": "Coconut Junction",
                 "position": {"x": 10, "y": 20},
                 "confidence": 0.9,
                 "component_id": "component-1",
@@ -19,6 +20,7 @@ def valid_graph() -> dict[str, object]:
             {
                 "id": "station-b",
                 "kind": "station",
+                "name": "Curry Sector",
                 "position": {"x": 30, "y": 20},
                 "confidence": 0.8,
                 "component_id": "component-1",
