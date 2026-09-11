@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 
-from app.maps import new_map_record, persist_processed_map
+from app.maps import get_map_record, new_map_record, persist_processed_map
 from app.pipeline import process_image
 from app.settings import ApiSettings
 from tests.test_pipeline import a_crossing_upload
@@ -32,6 +32,7 @@ class FakeSession:
     def __init__(self, fail_commit: bool = False) -> None:
         self.records: list[object] = []
         self.fail_commit = fail_commit
+        self.record_by_id: dict[UUID, object] = {}
 
     def __call__(self) -> "FakeSession":
         return self
@@ -48,6 +49,9 @@ class FakeSession:
     async def commit(self) -> None:
         if self.fail_commit:
             raise RuntimeError("database unavailable")
+
+    async def get(self, _model: object, map_id: UUID) -> object | None:
+        return self.record_by_id.get(map_id)
 
 
 @pytest.mark.anyio
@@ -82,3 +86,26 @@ async def test_persist_processed_map_removes_the_file_when_commit_fails(
         )
 
     assert list(tmp_path.glob("*.png")) == []
+
+
+@pytest.mark.anyio
+async def test_get_map_record_returns_the_saved_map_without_processing(
+    tmp_path,
+) -> None:
+    session = FakeSession()
+    settings = ApiSettings(upload_dir=tmp_path)
+    record = new_map_record(
+        process_image(a_crossing_upload(), settings),
+        settings,
+        "known-map.png",
+    )
+    session.record_by_id[record.id] = record
+
+    found = await get_map_record(session, record.id)  # type: ignore[arg-type]
+    missing = await get_map_record(
+        session,
+        UUID("00000000-0000-0000-0000-000000000000"),
+    )  # type: ignore[arg-type]
+
+    assert found is record
+    assert missing is None
