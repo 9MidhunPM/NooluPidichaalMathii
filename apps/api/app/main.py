@@ -106,7 +106,9 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
             content={
                 "id": str(record.id),
                 "schema_version": record.schema_version,
-                "share_url": f"{resolved_settings.public_base_url}map/{record.id}",
+                "share_url": (
+                    f"{str(resolved_settings.public_base_url).rstrip('/')}/map/{record.id}"
+                ),
             },
         )
 
