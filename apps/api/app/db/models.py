@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, func
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, Integer, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PostgreSQLUUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -36,7 +36,7 @@ class MapRecord(Base):
     image_height: Mapped[int] = mapped_column(Integer, nullable=False)
     settings: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
     graph: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
-    visual_seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    visual_seed: Mapped[int] = mapped_column(BigInteger, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
