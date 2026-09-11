@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: noolu
+      POSTGRES_USER: noolu
+      POSTGRES_PASSWORD: change-me
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noolu -d noolu"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - noolu_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  noolu_postgres_data:
