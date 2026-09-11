@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: noolu
+      POSTGRES_USER: noolu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noolu -d noolu"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://noolu:${POSTGRES_PASSWORD}@postgres:5432/noolu
+      PUBLIC_BASE_URL: https://idiyappam.midhunpm.in
+      UPLOAD_DIR: /data/uploads
+      RETENTION_DAYS: 7
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/data/uploads
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      API_ORIGIN: http://api:8000
+    depends_on:
+      - api
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.idiyappam.rule=Host(`idiyappam.midhunpm.in`)
+      - traefik.http.routers.idiyappam.entrypoints=websecure
+      - traefik.http.routers.idiyappam.tls.certresolver=letsencrypt
+      - traefik.http.services.idiyappam.loadbalancer.server.port=3000
+
+volumes:
+  postgres_data:
+  uploads_data:
