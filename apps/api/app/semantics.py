@@ -89,7 +89,10 @@ def _assign_lines(
     line_index = 0
     for component_id in sorted(edges_by_component):
         edge_ids = sorted(edges_by_component[component_id])
-        service_count = min(3, max(1, len(edge_ids) // 3))
+        # Dense idiyappam is deliberately shown as several readable services.
+        # Five edges per service keeps the line legend useful without collapsing
+        # the source-supported network into one or two coloured strands.
+        service_count = min(5, max(1, (len(edge_ids) + 4) // 5))
         for service_index in range(service_count):
             line_index += 1
             line_id = f"line-{line_index}"
