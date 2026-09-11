@@ -37,3 +37,14 @@ def delete_normalized_image(relative_path: str, upload_dir: Path) -> None:
     if path.name != relative_path or path.suffix != ".png":
         raise ValueError("normalized image paths must be generated PNG filenames")
     (upload_dir / path).unlink(missing_ok=True)
+
+
+def read_normalized_image(relative_path: str, upload_dir: Path) -> bytes | None:
+    """Read one generated PNG without allowing a path outside the upload volume."""
+    path = Path(relative_path)
+    if path.name != relative_path or path.suffix != ".png":
+        raise ValueError("normalized image paths must be generated PNG filenames")
+    try:
+        return (upload_dir / path).read_bytes()
+    except FileNotFoundError:
+        return None

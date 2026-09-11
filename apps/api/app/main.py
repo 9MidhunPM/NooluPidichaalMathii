@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from uuid import UUID
 
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,6 +14,7 @@ from app.maps import get_map_record, persist_processed_map
 from app.pipeline import process_image
 from app.routing import find_route
 from app.settings import ApiSettings
+from app.storage import read_normalized_image
 
 
 class RouteRequest(BaseModel):
@@ -139,6 +140,36 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
                 "graph": record.graph,
             },
         )
+
+    @app.get("/api/maps/{map_id}/image")
+    async def get_map_image(map_id: UUID) -> Response:
+        """Return the normalized source image for the matching persisted map."""
+        database: Database | None = app.state.database
+        if database is None:
+            return JSONResponse(
+                status_code=503,
+                content={"status": "not_ready", "code": "database_not_configured"},
+            )
+
+        record = await get_map_record(database.sessions, map_id)
+        if record is None:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": "map_not_found",
+                    "message": "This map is unavailable.",
+                },
+            )
+        image = read_normalized_image(record.image_path, resolved_settings.upload_dir)
+        if image is None:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": "map_image_not_found",
+                    "message": "This map image is unavailable.",
+                },
+            )
+        return Response(content=image, media_type="image/png")
 
     @app.post("/api/maps/{map_id}/route")
     async def route_map(map_id: UUID, request: RouteRequest) -> JSONResponse:
