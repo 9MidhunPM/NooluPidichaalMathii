@@ -14,7 +14,7 @@ from app.maps import get_map_record, persist_processed_map
 from app.pipeline import process_image
 from app.routing import find_route
 from app.settings import ApiSettings
-from app.storage import read_normalized_image
+from app.storage import read_artifact_image, read_normalized_image
 
 
 class RouteRequest(BaseModel):
@@ -139,6 +139,7 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
                 "image_width": record.image_width,
                 "image_height": record.image_height,
                 "visual_seed": record.visual_seed,
+                "skeleton_available": record.skeleton_path is not None,
                 "graph": record.graph,
             },
         )
@@ -170,6 +171,24 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
                     "code": "map_image_not_found",
                     "message": "This map image is unavailable.",
                 },
+            )
+        return Response(content=image, media_type="image/png")
+
+    @app.get("/api/maps/{map_id}/artifacts/skeleton")
+    async def get_map_skeleton(map_id: UUID) -> Response:
+        """Return the persisted raw strand extraction for a saved map."""
+        database: Database | None = app.state.database
+        if database is None:
+            return JSONResponse(status_code=503, content={"status": "not_ready"})
+        record = await get_map_record(database.sessions, map_id)
+        if record is None or record.skeleton_path is None:
+            return JSONResponse(
+                status_code=404, content={"code": "skeleton_unavailable"}
+            )
+        image = read_artifact_image(record.skeleton_path, resolved_settings.upload_dir)
+        if image is None:
+            return JSONResponse(
+                status_code=404, content={"code": "skeleton_unavailable"}
             )
         return Response(content=image, media_type="image/png")
 

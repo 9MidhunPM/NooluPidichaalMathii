@@ -8,13 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.db.models import MapRecord
 from app.pipeline import ProcessedMap
 from app.settings import ApiSettings
-from app.storage import delete_normalized_image, store_normalized_image
+from app.storage import (
+    delete_normalized_image,
+    store_normalized_image,
+    store_skeleton_image,
+)
 
 
 def new_map_record(
     processed: ProcessedMap,
     settings: ApiSettings,
     image_path: str,
+    skeleton_path: str | None = None,
     map_id: UUID | None = None,
     now: datetime | None = None,
 ) -> MapRecord:
@@ -25,6 +30,7 @@ def new_map_record(
         schema_version=processed.graph.schema_version,
         pipeline_version=processed.pipeline_version,
         image_path=image_path,
+        skeleton_path=skeleton_path,
         image_width=processed.image.width,
         image_height=processed.image.height,
         settings={
@@ -46,13 +52,20 @@ async def persist_processed_map(
     """Persist one processed map and remove its file if the database write fails."""
     map_id = uuid4()
     image_path = store_normalized_image(processed.image, map_id, settings.upload_dir)
-    record = new_map_record(processed, settings, image_path, map_id=map_id)
+    skeleton_path = store_skeleton_image(
+        processed.skeleton, map_id, settings.upload_dir
+    )
+    record = new_map_record(
+        processed, settings, image_path, skeleton_path, map_id=map_id
+    )
     try:
         async with sessions() as session:
             session.add(record)
             await session.commit()
     except Exception:
         delete_normalized_image(image_path, settings.upload_dir)
+        if skeleton_path:
+            delete_normalized_image(skeleton_path, settings.upload_dir)
         raise
     return record
 
