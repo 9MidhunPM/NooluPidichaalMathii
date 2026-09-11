@@ -23,6 +23,16 @@ STATION_NAMES = (
     "JLN Jaggery Junction",
     "MG Road Muringa",
 )
+STATION_QUALIFIERS = (
+    "Platform",
+    "Garden Side",
+    "Market Gate",
+    "Harbour End",
+    "Canal View",
+    "Banana Leaf Side",
+    "Morning Shift",
+    "Last Noodle Stop",
+)
 
 
 def assign_metro_semantics(topology: TopologyGraph, seed: int) -> MetroGraph:
@@ -157,4 +167,7 @@ def _unique_display_name(names: tuple[str, ...], index: int, seed: int) -> str:
     absolute_index = seed + index
     base = names[absolute_index % len(names)]
     cycle = absolute_index // len(names)
-    return base if cycle == 0 else f"{base} {cycle + 1}"
+    if cycle == 0:
+        return base
+    qualifier = STATION_QUALIFIERS[(cycle - 1) % len(STATION_QUALIFIERS)]
+    return f"{base} {qualifier}"
