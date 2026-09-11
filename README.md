@@ -1,103 +1,116 @@
-<img width="1280" height="640" alt="git (1)" src="https://github.com/user-attachments/assets/8920b256-2ba8-4988-b824-5351134eb4bd" />
+<img width="1280" height="640" alt="TinkerHub Useless Projects" src="https://github.com/user-attachments/assets/892ccf47-6ce2-4b02-819b-c286a894c0a7" />
 
+# Noolu Pidichaal Mathi 🎯
 
-
-# [Project Name] 🎯
-
+> **Vazhi ariyille? Noolu pidichaal mathi.**
 
 ## Basic Details
-### Team Name: [Name]
 
+### Team Name
+
+Team details pending final hackathon submission.
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+
+- Team lead: Midhun P M — institution details pending
 
 ### Project Description
-[2-3 lines about what your project does]
+
+Noolu Pidichaal Mathi turns a top-down idiyappam photograph into an absurdly
+serious metro system. The application extracts visible noodle paths, creates a
+deterministic graph, and presents it as NoolVerse: a navigable 3D transit
+network with stations, routes, and tiny trains.
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+
+Breakfast has no reliable public transport. A traveller stuck at Coconut
+Junction cannot confidently reach Curry Sector before the chutney gets cold.
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+
+Treat idiyappam strands as verified transit infrastructure. The system shows
+what it detected, labels uncertain crossings honestly, calculates a route over
+visible paths, and lets the visitor ride the Nool Express.
 
 ## Technical Details
+
 ### Technologies/Components Used
+
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
+
+- TypeScript, Python, SQL
+- Next.js, FastAPI, PostgreSQL
+- React Three Fiber, Drei, OpenCV, scikit-image, NetworkX, SQLAlchemy
+- pnpm, uv, Vitest, pytest, Ruff, mypy, Docker Compose, Dokploy
 
 For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
+
+- No dedicated hardware; image processing runs on the server and NoolVerse runs
+  in a WebGL-capable browser.
 
 ### Implementation
-For Software:
-# Installation
-[commands]
 
-# Run
-[commands]
+The current foundation provides a typed Next.js shell, a typed FastAPI service,
+versioned metro graph validation, PostgreSQL persistence models, and automated
+checks. Image extraction, routing, 3D rendering, and deployment are active
+implementation milestones.
 
-### Project Documentation
-For Software:
+#### Installation
 
-# Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+```bash
+pnpm install
+cd apps/api && uv sync
+```
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+#### Run
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+```bash
+# Terminal 1
+pnpm --filter @noolu/web dev
 
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
+# Terminal 2
+cd apps/api && uv run uvicorn app.main:app --reload
+```
 
-For Hardware:
+#### Verify
 
-# Schematic & Circuit
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
+```bash
+pnpm --filter @noolu/web run check
+pnpm --filter @noolu/web run test
+cd apps/api && uv run ruff check app tests && uv run mypy && uv run pytest
+```
 
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
+## Project Documentation
 
-# Build Photos
-![Components](Add photo of your components here)
-*List out all components shown*
+### Workflow
 
-![Build](Add photos of build process here)
-*Explain the build steps*
+```mermaid
+flowchart LR
+    A[Idiyappam photo] --> B[FastAPI vision pipeline]
+    B --> C[Versioned metro graph]
+    C --> D[PostgreSQL and image volume]
+    C --> E[Next.js and NoolVerse]
+    E --> F[Route planner and train journey]
+```
 
-![Final](Add photo of final product here)
-*Explain the final build*
+### Screenshots
 
-### Project Demo
-# Video
-[Add your demo video link here]
-*Explain what the video demonstrates*
+Screenshots will be added after the interactive upload, route, and NoolVerse
+milestones are complete. They will use real runtime captures and clearly label
+any synthetic data.
 
-# Additional Demos
-[Add any extra demo materials/links]
+## Project Demo
+
+The demo video will be recorded after the complete upload-to-train journey is
+implemented and verified.
 
 ## Team Contributions
-- [Name 1]: [Specific contributions]
-- [Name 2]: [Specific contributions]
-- [Name 3]: [Specific contributions]
+
+- Midhun P M: product direction and implementation
 
 ---
-Made with ❤️ at TinkerHub Useless Projects 
 
-![Static Badge](https://img.shields.io/badge/TinkerHub-24?color=%23000000&link=https%3A%2F%2Fwww.tinkerhub.org%2F)
-![Static Badge](https://img.shields.io/badge/UselessProjects--26-26?link=https%3A%2F%2Ftinkerhub.org%2Fevents%2F1M8ORET9A1%2Fuseless-projects-3.0)
+Made with ❤️ at TinkerHub Useless Projects
 
-
-
+![TinkerHub](https://img.shields.io/badge/TinkerHub-24?color=%23000000&link=https%3A%2F%2Fwww.tinkerhub.org%2F)
+![Useless Projects](https://img.shields.io/badge/UselessProjects--26-26?link=https%3A%2F%2Ftinkerhub.org%2Fevents%2F1M8ORET9A1%2Fuseless-projects-3.0)

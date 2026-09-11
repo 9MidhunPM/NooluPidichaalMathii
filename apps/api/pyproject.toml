@@ -1,0 +1,38 @@
+[project]
+name = "noolu-api"
+version = "0.0.0"
+description = "Deterministic image-to-metro processing API for Noolu Pidichaal Mathi."
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.15,<2",
+    "asyncpg>=0.30,<1",
+    "fastapi>=0.115,<1",
+    "pydantic-settings>=2.0,<3",
+    "sqlalchemy>=2.0,<3",
+    "uvicorn[standard]>=0.34,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+files = ["app"]
+strict = true
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27,<1",
+    "mypy>=1.19,<2",
+    "pytest>=8.0,<10",
+    "ruff>=0.14,<1",
+]

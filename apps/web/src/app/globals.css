@@ -1,0 +1,27 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, sans-serif;
+  background: #101112;
+  color: #f9f1df;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  display: grid;
+  min-height: 100dvh;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+}
+
+h1,
+p {
+  margin: 0;
+}
