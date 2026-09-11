@@ -1,0 +1,15 @@
+{
+  "name": "noolu-pidichaal-mathi",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "check": "pnpm --recursive run check",
+    "test": "pnpm --recursive run test",
+    "build": "pnpm --recursive run build"
+  }
+}

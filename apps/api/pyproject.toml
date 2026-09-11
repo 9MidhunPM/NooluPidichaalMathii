@@ -1,0 +1,9 @@
+[project]
+name = "noolu-api"
+version = "0.0.0"
+description = "Deterministic image-to-metro processing API for Noolu Pidichaal Mathi."
+requires-python = ">=3.14"
+dependencies = []
+
+[tool.uv]
+package = false

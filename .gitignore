@@ -1,0 +1,24 @@
+# JavaScript
+node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and generated data
+.env
+.env.*
+!.env.example
+data/
+uploads/
+
+# Operating-system files
+.DS_Store

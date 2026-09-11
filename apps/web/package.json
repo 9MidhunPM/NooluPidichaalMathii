@@ -1,0 +1,13 @@
+{
+  "name": "@noolu/web",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "check": "node --check next.config.mjs",
+    "test": "node --test",
+    "build": "node -e \"throw new Error('Web application has not been bootstrapped yet.')\""
+  }
+}
