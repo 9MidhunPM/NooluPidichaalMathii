@@ -12,7 +12,7 @@ from app.skeleton import SkeletonResult
 
 Pixel = tuple[int, int]
 MAX_RAW_TOPOLOGY_NODES = 96
-CURATED_STATION_COUNT = 10
+CURATED_STATION_COUNT = 24
 
 
 class TopologyError(ValueError):

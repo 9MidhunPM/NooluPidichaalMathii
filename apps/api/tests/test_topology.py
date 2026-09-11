@@ -59,6 +59,6 @@ def test_extract_graph_curates_a_dense_visible_component() -> None:
 
     graph = extract_graph(SkeletonResult(pixels=pixels))
 
-    assert len(graph.nodes) == 10
-    assert len(graph.edges) == 9
+    assert len(graph.nodes) == 24
+    assert len(graph.edges) == 23
     assert max(len(edge.points) for edge in graph.edges) < 80
