@@ -22,6 +22,14 @@ STATION_NAMES = (
     "Malappuram Masala Junction",
     "Palakkad Pal-appam Pass",
     "Alappuzha All-Appam Aboard",
+    "Kottayam Kappa Connection",
+    "Kasaragod Kasa-Roll Gate",
+    "Idukki Idli Interchange",
+    "Wayanad Way-A-Noodle",
+    "Pathanamthitta Patha-Naan Stop",
+    "Muvattupuzha Mooli Point",
+    "Ponnani Puttu Pier",
+    "Manjeri Mango-Masala Mile",
 )
 STATION_QUALIFIERS = (
     "Platform",

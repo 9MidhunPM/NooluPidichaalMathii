@@ -115,4 +115,4 @@ def test_assign_metro_semantics_generates_unique_names_for_dense_maps() -> None:
     graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
 
     assert len({node.name for node in graph.nodes}) == len(graph.nodes)
-    assert graph.nodes[8].name == "Thiruvanantha-Puttu Central Platform"
+    assert graph.nodes[8].name == "Kottayam Kappa Connection"

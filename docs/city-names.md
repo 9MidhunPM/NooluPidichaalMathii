@@ -2,8 +2,10 @@
 
 NMRL's fictional station names reference prominent Kerala cities outside the
 operational Kochi metro network: Thiruvananthapuram, Kozhikode, Thrissur, Kollam,
-Kannur, Malappuram, Palakkad, and Alappuzha. This is a curated regional selection,
-not a population ranking or a claim that these cities have no railway stations.
+Kannur, Malappuram, Palakkad, Alappuzha, Kottayam, Kasaragod, Idukki, Wayanad,
+Pathanamthitta, Muvattupuzha, Ponnani, and Manjeri. This is a curated regional
+selection, not a population ranking or a claim that these places have no railway
+stations.
 
 Research checked on 12 September 2026:
 
