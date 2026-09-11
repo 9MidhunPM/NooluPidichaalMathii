@@ -31,14 +31,7 @@ def assign_metro_semantics(topology: TopologyGraph, seed: int) -> MetroGraph:
         raise ValueError("visual seed must be non-negative")
 
     component_by_node = _components(topology)
-    components = tuple(sorted(set(component_by_node.values())))
-    line_by_component = {
-        component_id: f"line-{index}"
-        for index, component_id in enumerate(components, start=1)
-    }
-    edges_by_component: dict[str, list[str]] = defaultdict(list)
-    for edge in topology.edges:
-        edges_by_component[component_by_node[edge.from_node_id]].append(edge.id)
+    line_by_edge, line_definitions = _assign_lines(topology, component_by_node)
 
     graph_nodes = [
         MetroNode(
@@ -62,23 +55,50 @@ def assign_metro_semantics(topology: TopologyGraph, seed: int) -> MetroGraph:
             component_id=component_by_node[edge.from_node_id],
             confidence=0.8,
             service_status="active",
-            line_id=line_by_component[component_by_node[edge.from_node_id]],
-            elevation_level=0,
+            line_id=line_by_edge[edge.id],
+            elevation_level=line_definitions[line_by_edge[edge.id]][1],
         )
         for edge in topology.edges
     ]
     graph_lines = [
         MetroLine(
-            id=line_by_component[component_id],
+            id=line_id,
             name=_line_name(index, seed),
             color=LINE_COLORS[(seed + index) % len(LINE_COLORS)],
-            elevation_level=0,
+            elevation_level=elevation_level,
             service_status="active",
-            edge_ids=sorted(edges_by_component[component_id]),
+            edge_ids=edge_ids,
         )
-        for index, component_id in enumerate(components)
+        for index, (line_id, (edge_ids, elevation_level)) in enumerate(
+            sorted(line_definitions.items()),
+        )
     ]
     return MetroGraph(nodes=graph_nodes, edges=graph_edges, lines=graph_lines)
+
+
+def _assign_lines(
+    topology: TopologyGraph, component_by_node: dict[str, str]
+) -> tuple[dict[str, str], dict[str, tuple[list[str], int]]]:
+    """Group a dense curated graph into a small palette of readable services."""
+    edges_by_component: dict[str, list[str]] = defaultdict(list)
+    for edge in topology.edges:
+        edges_by_component[component_by_node[edge.from_node_id]].append(edge.id)
+
+    line_by_edge: dict[str, str] = {}
+    line_definitions: dict[str, tuple[list[str], int]] = {}
+    line_index = 0
+    for component_id in sorted(edges_by_component):
+        edge_ids = sorted(edges_by_component[component_id])
+        service_count = min(3, max(1, len(edge_ids) // 3))
+        for service_index in range(service_count):
+            line_index += 1
+            line_id = f"line-{line_index}"
+            start = service_index * len(edge_ids) // service_count
+            end = (service_index + 1) * len(edge_ids) // service_count
+            assigned = edge_ids[start:end]
+            line_definitions[line_id] = (assigned, service_index)
+            line_by_edge.update({edge_id: line_id for edge_id in assigned})
+    return line_by_edge, line_definitions
 
 
 def _components(topology: TopologyGraph) -> dict[str, str]:
