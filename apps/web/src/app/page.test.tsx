@@ -8,9 +8,11 @@ test("introduces the product and upload journey", () => {
 
   expect(
     screen.getByRole("heading", {
-      name: "From idiyappam to an unnecessarily serious metro.",
+      name: "One plate. Many platforms. Zero necessity.",
     }),
   ).toBeInTheDocument();
-  expect(screen.getByText("Vazhi ariyille? Noolu pidichaal mathi.")).toBeVisible();
+  expect(screen.getByText(/Vazhi ariyille/)).toBeVisible();
   expect(screen.getByLabelText("Upload idiyappam photo")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Five departments. One overqualified breakfast." })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "Actual engineering. Questionable civic priority." })).toBeVisible();
 });
