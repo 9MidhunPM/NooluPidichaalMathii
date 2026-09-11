@@ -64,6 +64,32 @@ def test_assign_metro_semantics_splits_dense_curated_edges_into_services() -> No
     assert {line.elevation_level for line in graph.lines} == {0, 1}
 
 
+def test_assign_metro_semantics_keeps_each_service_connected() -> None:
+    nodes = tuple(
+        TopologyNode(f"node-{index}", ImagePoint(x=index, y=0), 2)
+        for index in range(7)
+    )
+    edges = tuple(
+        TopologyEdge(
+            f"edge-{index}",
+            f"node-{index}",
+            f"node-{index + 1}",
+            (ImagePoint(x=index, y=0), ImagePoint(x=index + 1, y=0)),
+            1,
+        )
+        for index in range(6)
+    )
+
+    graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
+
+    for line in graph.lines:
+        service_edges = [edge for edge in graph.edges if edge.line_id == line.id]
+        service_nodes = {service_edges[0].from_node_id, service_edges[0].to_node_id}
+        for edge in service_edges[1:]:
+            assert service_nodes.intersection({edge.from_node_id, edge.to_node_id})
+            service_nodes.update({edge.from_node_id, edge.to_node_id})
+
+
 def test_assign_metro_semantics_generates_unique_names_for_dense_maps() -> None:
     nodes = tuple(
         TopologyNode(f"node-{index}", ImagePoint(x=index, y=0), 2)
@@ -83,4 +109,4 @@ def test_assign_metro_semantics_generates_unique_names_for_dense_maps() -> None:
     graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
 
     assert len({node.name for node in graph.nodes}) == len(graph.nodes)
-    assert graph.nodes[8].name == "Edappally Appam Exchange 2"
+    assert graph.nodes[8].name == "Edappally Appam Exchange Platform"

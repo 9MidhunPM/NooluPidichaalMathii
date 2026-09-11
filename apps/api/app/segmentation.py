@@ -10,7 +10,7 @@ from PIL import Image
 
 from app.images import NormalizedImage
 
-SEGMENTATION_VERSION = "color-ridge-v2"
+SEGMENTATION_VERSION = "color-ridge-v3"
 MIN_FOREGROUND_RATIO = 0.002
 MAX_FOREGROUND_RATIO = 0.8
 
@@ -69,7 +69,7 @@ def _light_ridge_mask(rgb: NDArray[np.uint8]) -> NDArray[np.uint8]:
         cv2.MORPH_OPEN,
         cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)),
     )
-    return np.asarray(cleaned, dtype=np.uint8)
+    return _remove_border_connected_foreground(np.asarray(cleaned, dtype=np.uint8))
 
 
 def _dark_ridge_mask(rgb: NDArray[np.uint8]) -> NDArray[np.uint8]:
@@ -92,3 +92,21 @@ def _select_mask(
     if MIN_FOREGROUND_RATIO <= light_ratio <= 0.45:
         return light_ridges
     return dark_ridges
+
+
+def _remove_border_connected_foreground(mask: NDArray[np.uint8]) -> NDArray[np.uint8]:
+    """Remove bright surfaces that extend from the photo boundary into the plate."""
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    height, width = mask.shape
+    cleaned = np.zeros_like(mask)
+    for label in range(1, count):
+        x, y, component_width, component_height, _ = stats[label]
+        touches_border = (
+            x == 0
+            or y == 0
+            or x + component_width == width
+            or y + component_height == height
+        )
+        if not touches_border:
+            cleaned[labels == label] = 255
+    return cleaned

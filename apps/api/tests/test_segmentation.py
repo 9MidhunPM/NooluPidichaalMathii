@@ -46,6 +46,21 @@ def test_segment_prefers_pale_low_saturation_strands_over_colored_background() -
     assert not result.mask[0, 0]
 
 
+def test_segment_removes_a_bright_background_connected_to_the_photo_border() -> None:
+    image = Image.new("RGB", (120, 120), color="#c4c9c5")
+    draw = ImageDraw.Draw(image)
+    draw.ellipse((18, 18, 102, 102), fill="#252925")
+    draw.ellipse((24, 24, 96, 96), fill="#f5f0df")
+    draw.line([(36, 48), (82, 70)], fill="#fffdf2", width=5)
+    output = BytesIO()
+    image.save(output, format="PNG")
+
+    result = segment(NormalizedImage(output.getvalue(), "image/png", 120, 120))
+
+    assert result.mask[60, 60]
+    assert not result.mask[0, 0]
+
+
 def test_segment_rejects_images_without_enough_foreground() -> None:
     output = BytesIO()
     Image.new("RGB", (100, 100), color="white").save(output, format="PNG")
