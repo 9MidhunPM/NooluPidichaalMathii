@@ -1,7 +1,7 @@
 "use client";
 
-import { OrbitControls, useTexture } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Html, OrbitControls, useTexture } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { CatmullRomCurve3, Color, DoubleSide, Mesh, TubeGeometry, Vector3 } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 
@@ -25,7 +25,7 @@ function Rail({ edge, graph, map, active }: { edge: Edge; graph: Graph; map: Met
   const line = graph.lines.find((item) => item.id === edge.line_id);
   const elevation = 0.24 + edge.elevation_level * 0.28;
   const curve = useMemo(() => new CatmullRomCurve3(edge.points.map((point) => toWorld(point, map, elevation))), [edge.points, elevation, map]);
-  const geometry = useMemo(() => new TubeGeometry(curve, Math.max(16, Math.min(180, edge.points.length)), active ? 0.075 : 0.052, 8, false), [active, curve, edge.points.length]);
+  const geometry = useMemo(() => new TubeGeometry(curve, Math.max(16, Math.min(180, edge.points.length)), active ? 0.13 : 0.09, 10, false), [active, curve, edge.points.length]);
   const color = active ? "#ff9d24" : line?.color ?? "#2dd4ff";
   return <group><mesh geometry={geometry} castShadow><meshStandardMaterial color={color} emissive={new Color(color)} emissiveIntensity={active ? 1.8 : 0.72} roughness={0.28} metalness={0.55} /></mesh>{active ? <mesh geometry={geometry} scale={1.22}><meshBasicMaterial color={color} transparent opacity={0.16} /></mesh> : null}</group>;
 }
@@ -36,13 +36,20 @@ function Plate({ imageUrl, map }: { imageUrl: string; map: MetroMap }): ReactNod
   const width = aspect >= 1 ? WORLD_SIZE : WORLD_SIZE * aspect;
   const height = aspect >= 1 ? WORLD_SIZE / aspect : WORLD_SIZE;
   texture.colorSpace = "srgb";
-  return <group><mesh rotation-x={-Math.PI / 2} position={[0, -0.24, 0]} receiveShadow><cylinderGeometry args={[Math.max(width, height) * 0.59, Math.max(width, height) * 0.59, 0.32, 96]} /><meshStandardMaterial color="#e9d7b7" roughness={0.28} metalness={0.06} /></mesh><mesh rotation-x={-Math.PI / 2} position={[0, -0.06, 0]}><planeGeometry args={[width, height]} /><meshStandardMaterial map={texture} roughness={0.72} side={DoubleSide} /></mesh></group>;
+  return <group><mesh position={[0, -0.24, 0]} receiveShadow><cylinderGeometry args={[Math.max(width, height) * 0.59, Math.max(width, height) * 0.59, 0.32, 96]} /><meshStandardMaterial color="#e9d7b7" roughness={0.28} metalness={0.06} /></mesh><mesh rotation-x={-Math.PI / 2} position={[0, -0.06, 0]}><planeGeometry args={[width, height]} /><meshStandardMaterial map={texture} roughness={0.72} side={DoubleSide} /></mesh></group>;
 }
 
 function Station({ node, map, selected }: { node: Node; map: MetroMap; selected: boolean }): ReactNode {
   const height = node.kind === "interchange" ? 0.72 : 0.42;
   const radius = node.kind === "interchange" ? 0.2 : 0.13;
-  return <group position={toWorld(node.position, map, height)}><mesh position={[0, -height / 2, 0]} castShadow><cylinderGeometry args={[0.045, 0.065, height, 8]} /><meshStandardMaterial color="#3f3730" roughness={0.58} metalness={0.66} /></mesh><mesh rotation-x={Math.PI / 2}><cylinderGeometry args={[radius, radius, 0.08, 32]} /><meshStandardMaterial color={selected ? "#fff3c4" : "#f6e6cc"} emissive={selected ? "#ff9d24" : "#8bdcff"} emissiveIntensity={selected ? 2 : 0.55} roughness={0.22} metalness={0.6} /></mesh><mesh position={[0, 0.055, 0]} rotation-x={Math.PI / 2}><torusGeometry args={[radius * 0.7, 0.024, 8, 28]} /><meshBasicMaterial color={selected ? "#ff9d24" : "#e9f7ff"} /></mesh></group>;
+  return <group position={toWorld(node.position, map, height)}><mesh position={[0, -height / 2, 0]} castShadow><cylinderGeometry args={[0.045, 0.065, height, 8]} /><meshStandardMaterial color="#3f3730" roughness={0.58} metalness={0.66} /></mesh><mesh><cylinderGeometry args={[radius, radius, 0.08, 32]} /><meshStandardMaterial color={selected ? "#fff3c4" : "#f6e6cc"} emissive={selected ? "#ff9d24" : "#8bdcff"} emissiveIntensity={selected ? 2 : 0.55} roughness={0.22} metalness={0.6} /></mesh><mesh position={[0, 0.055, 0]} rotation-x={Math.PI / 2}><torusGeometry args={[radius * 0.7, 0.024, 8, 28]} /><meshBasicMaterial color={selected ? "#ff9d24" : "#e9f7ff"} /></mesh><Html position={[0, 0.22, 0]} center distanceFactor={9} occlude><span style={{ display: "block", padding: "3px 6px", border: "1px solid rgba(229,238,240,.38)", borderRadius: 4, background: "rgba(6,11,14,.78)", color: "#f8f4e9", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>{node.name}</span></Html></group>;
+}
+
+function CameraDirector({ mode }: { mode: CameraMode }): ReactNode {
+  const { camera } = useThree();
+  const destination = useMemo(() => mode === "top" ? new Vector3(0, 15, 0.01) : mode === "cinematic" ? new Vector3(10, 8, 10) : new Vector3(8, 7, 8), [mode]);
+  useFrame((_, delta) => { camera.position.lerp(destination, Math.min(1, delta * 3.5)); camera.lookAt(0, 0, 0); });
+  return null;
 }
 
 function NoolExpress({ edge, map, enabled }: { edge: Edge | undefined; map: MetroMap; enabled: boolean }): ReactNode {
@@ -56,8 +63,7 @@ function MetroWorld({ map, route, imageUrl, cameraMode }: { map: MetroMap; route
   const activeEdges = new Set(route?.edge_ids ?? []);
   const selectedNodes = new Set(route?.node_ids ?? []);
   const routeEdge = map.graph.edges.find((edge) => activeEdges.has(edge.id)) ?? map.graph.edges[0];
-  const camera: [number, number, number] = cameraMode === "top" ? [0, 13, 0.01] : cameraMode === "cinematic" ? [8, 7, 9] : [8, 7, 8];
-  return <Canvas shadows dpr={[1, 1.5]} camera={{ position: camera, fov: 44 }}><color attach="background" args={["#090c0e"]} /><fog attach="fog" args={["#090c0e", 12, 24]} /><ambientLight intensity={1.25} color="#c7e6ff" /><directionalLight position={[5, 10, 4]} intensity={3.1} color="#ffe1ab" castShadow /><pointLight position={[-4, 4, -2]} intensity={13} color="#36d9ff" distance={12} /><Suspense fallback={null}><Plate imageUrl={imageUrl} map={map} /></Suspense>{map.graph.edges.map((edge) => <Rail key={edge.id} edge={edge} graph={map.graph} map={map} active={activeEdges.has(edge.id)} />)}{map.graph.nodes.map((node) => <Station key={node.id} node={node} map={map} selected={selectedNodes.has(node.id)} />)}<NoolExpress edge={routeEdge} map={map} enabled={route?.status === "ok"} /><OrbitControls makeDefault enablePan enableDamping target={[0, 0, 0]} maxPolarAngle={Math.PI / 2.05} minDistance={4} maxDistance={20} /></Canvas>;
+  return <Canvas shadows dpr={[1, 1.5]} camera={{ position: [8, 7, 8], fov: 44 }}><color attach="background" args={["#090c0e"]} /><fog attach="fog" args={["#090c0e", 12, 24]} /><ambientLight intensity={1.25} color="#c7e6ff" /><directionalLight position={[5, 10, 4]} intensity={3.1} color="#ffe1ab" castShadow /><pointLight position={[-4, 4, -2]} intensity={13} color="#36d9ff" distance={12} /><CameraDirector mode={cameraMode} /><Suspense fallback={null}><Plate imageUrl={imageUrl} map={map} /></Suspense>{map.graph.edges.map((edge) => <Rail key={edge.id} edge={edge} graph={map.graph} map={map} active={activeEdges.has(edge.id)} />)}{map.graph.nodes.map((node) => <Station key={node.id} node={node} map={map} selected={selectedNodes.has(node.id)} />)}<NoolExpress edge={routeEdge} map={map} enabled={route?.status === "ok"} /><OrbitControls makeDefault enablePan enableDamping enableRotate={cameraMode === "orbit"} target={[0, 0, 0]} maxPolarAngle={Math.PI / 2.05} minDistance={4} maxDistance={20} /></Canvas>;
 }
 
 function demo(): Promise<File> { return new Promise((resolve, reject) => { const canvas = document.createElement("canvas"); canvas.width = 560; canvas.height = 420; const context = canvas.getContext("2d"); if (!context) { reject(new Error("Canvas unavailable")); return; } context.fillStyle = "#264b32"; context.fillRect(0, 0, canvas.width, canvas.height); context.strokeStyle = "#f8eddb"; context.lineWidth = 9; for (let index = 0; index < 8; index += 1) { context.beginPath(); context.ellipse(280, 210, 210 - index * 18, 130 - index * 11, index * 0.31, 0, Math.PI * 2); context.stroke(); } canvas.toBlob((blob) => blob ? resolve(new File([blob], "demo-idiyappam.png", { type: "image/png" })) : reject(new Error("Demo image failed")), "image/png"); }); }
