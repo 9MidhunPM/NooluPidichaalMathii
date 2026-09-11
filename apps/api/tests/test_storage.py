@@ -1,7 +1,9 @@
 from uuid import UUID
 
+import pytest
+
 from app.images import NormalizedImage
-from app.storage import store_normalized_image
+from app.storage import delete_normalized_image, store_normalized_image
 
 
 def test_store_normalized_image_uses_generated_volume_relative_path(tmp_path) -> None:
@@ -29,3 +31,8 @@ def test_store_normalized_image_replaces_an_existing_generated_image(tmp_path) -
     stored_path = store_normalized_image(replacement, map_id, tmp_path)
 
     assert (tmp_path / stored_path).read_bytes() == b"replacement"
+
+
+def test_delete_normalized_image_rejects_non_generated_paths(tmp_path) -> None:
+    with pytest.raises(ValueError, match="generated PNG"):
+        delete_normalized_image("../outside.png", tmp_path)

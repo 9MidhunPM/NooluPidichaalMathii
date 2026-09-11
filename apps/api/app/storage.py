@@ -29,3 +29,11 @@ def store_normalized_image(
         raise
 
     return relative_path
+
+
+def delete_normalized_image(relative_path: str, upload_dir: Path) -> None:
+    """Remove one generated upload path without accepting arbitrary traversal."""
+    path = Path(relative_path)
+    if path.name != relative_path or path.suffix != ".png":
+        raise ValueError("normalized image paths must be generated PNG filenames")
+    (upload_dir / path).unlink(missing_ok=True)
