@@ -1,5 +1,6 @@
 "use client";
 
+import { ProcessingReveal } from "./processing-reveal";
 import { ServiceBoard } from "./service-board";
 import "./services.css";
 
@@ -61,4 +62,78 @@ function LayersPanel({ map,imageUrl,active,layers,onLayer,onPreview }: { map:Met
 
 function Journey({ map,route,origin,destination,onOrigin,onDestination,onPlan,names }: { map:MetroMap;route:Route|null;origin:string;destination:string;onOrigin:(id:string)=>void;onDestination:(id:string)=>void;onPlan:()=>void;names:Map<string,string> }): ReactNode { const status=route?.status==="no_route"?route.warning??"No noodle-supported journey joins these stations.":"Choose two stations to light the noodle.";return <aside className="journey-panel"><p className="panel-kicker">NMRL JOURNEY PLANNER</p><h2>Where are we unnecessarily going?</h2><label>From<select value={origin} onChange={(event)=>onOrigin(event.target.value)}>{map.graph.nodes.map((node)=><option key={node.id} value={node.id}>{names.get(node.id)}</option>)}</select></label><label>To<select value={destination} onChange={(event)=>onDestination(event.target.value)}>{map.graph.nodes.map((node)=><option key={node.id} value={node.id}>{names.get(node.id)}</option>)}</select></label><button className="route-button" onClick={onPlan}>Show selected journey <span>→</span></button><div className="journey-card"><p>Suggested journey</p>{route?.status==="ok"?<><strong>{Math.round(route.total_length_px)} noodle-centimetres</strong><ol className="journey-timeline">{route.node_ids.map((id,index)=><li key={id}><i/><span><strong>{names.get(id)}</strong><small>{index===0?"Board the Nool Express":index===route.node_ids.length-1?"Arrive mildly overcooked":"Continue through this station"}</small></span></li>)}</ol></>:<small>{status}</small>}</div><ServiceBoard graph={map.graph} names={names}/></aside>; }
 
-export default function HomePage({ initialMapId }: { initialMapId?:string }): ReactNode { const [map,setMap]=useState<MetroMap|null>(null),[route,setRoute]=useState<Route|null>(null),[origin,setOrigin]=useState(""),[destination,setDestination]=useState(""),[mode,setMode]=useState<CameraMode>("orbit"),[message,setMessage]=useState("Upload a top-down idiyappam photo to open NoolVerse."),[layers,setLayers]=useState<Layers>(DEFAULT_LAYERS),[preview,setPreview]=useState<PreviewKind>(null); const open=useCallback(async(id:string)=>{const response=await fetch(`/backend/api/maps/${id}`),value=await response.json() as MetroMap;if(!response.ok)throw new Error("Saved map unavailable");setMap(value);setRoute(null);setOrigin(value.graph.nodes[0]?.id??"");setDestination(value.graph.nodes[1]?.id??value.graph.nodes[0]?.id??"");},[]); const upload=useCallback(async(file:File)=>{setMessage("Tracing visible noodle paths…");try{const body=new FormData();body.append("image",file);const response=await fetch("/backend/api/maps",{method:"POST",body}),data=await response.json() as {id?:string;message?:string};if(!response.ok||!data.id)throw new Error(data.message??"Map creation failed");await open(data.id);}catch(error){setMessage(error instanceof Error?error.message:"Processing failed");}},[open]); useEffect(()=>{if(initialMapId)void open(initialMapId);},[initialMapId,open]);useEffect(()=>{const saved=window.localStorage.getItem("nmrl-layers");if(saved)try{setLayers({...DEFAULT_LAYERS,...JSON.parse(saved) as Partial<Layers>});}catch{}},[]);useEffect(()=>{window.localStorage.setItem("nmrl-layers",JSON.stringify(layers));},[layers]);useEffect(()=>{const close=(event:KeyboardEvent)=>{if(event.key==="Escape")setPreview(null);};window.addEventListener("keydown",close);return()=>window.removeEventListener("keydown",close);},[]);const plan=useCallback(async()=>{if(!map)return;try{const response=await fetch(`/backend/api/maps/${map.id}/route`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({origin_id:origin,destination_id:destination})}),value=await response.json() as Route;if(!response.ok)throw new Error(value.warning??"Journey planning failed");setRoute(value);}catch(error){setRoute({status:"no_route",node_ids:[],edge_ids:[],total_length_px:0,warning:error instanceof Error?error.message:"Journey planning failed"});}},[destination,map,origin]);if(!map)return <main className="control-room"><header className="topbar"><div className="brand-mark">≋</div><div><p className="wordmark">NOOLU PIDICHAAL MATHI <span>· NMRL</span></p><p className="brand-tagline">Vazhi ariyille? Noolu pidichaal mathi.</p></div><p className="system-status"><span/>NMRL services needlessly operational</p></header><section className="launch"><p className="eyebrow">NOOLU METRO RAIL LIMITED</p><h1>From idiyappam to an unnecessarily serious metro.</h1><p>{message}</p><label className="gold-button">Upload your idiyappam<input aria-label="Upload idiyappam photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={(event:ChangeEvent<HTMLInputElement>)=>{const file=event.target.files?.[0];if(file)void upload(file);}} hidden/></label></section></main>;const active=new Set(route?.edge_ids??[]),imageUrl=`/backend/api/maps/${map.id}/image`,names=namesFor(map.graph),toggle=(key:LayerKey)=>setLayers((current)=>({...current,[key]:!current[key]}));return <main className="control-room"><header className="topbar"><div className="brand-mark">≋</div><div><p className="wordmark">NOOLU PIDICHAAL MATHI <span>· NMRL</span></p><p className="brand-tagline">Vazhi ariyille? Noolu pidichaal mathi.</p></div><p className="system-status"><span/>NMRL services needlessly operational</p></header><section className="explorer-shell"><LayersPanel map={map} imageUrl={imageUrl} active={active} layers={layers} onLayer={toggle} onPreview={setPreview}/><div className="world-panel"><div className="world-heading"><div><p className="eyebrow">NOOLU METRO RAIL LIMITED</p><h2>NoolVerse operations map</h2></div><div className="view-tabs"><button className={mode==="orbit"?"active":""} onClick={()=>setMode("orbit")}>Orbit</button><button className={mode==="top"?"active":""} onClick={()=>setMode("top")}>Top view</button><button className={mode==="cinematic"?"active":""} onClick={()=>setMode("cinematic")}>Cinematic</button></div></div><div className="world-canvas"><MetroWorld map={map} route={route} imageUrl={imageUrl} mode={mode} layers={layers} names={names}/></div><footer className="world-footer"><span>Tracks follow visible noodle geometry</span><span>Crossings are inferred</span></footer></div><Journey map={map} route={route} origin={origin} destination={destination} onOrigin={(id)=>{setOrigin(id);setRoute(null);}} onDestination={(id)=>{setDestination(id);setRoute(null);}} onPlan={()=>void plan()} names={names}/></section><Preview kind={preview} map={map} imageUrl={imageUrl} active={active} onClose={()=>setPreview(null)}/></main>; }
+export default function HomePage({ initialMapId }: { initialMapId?: string }): ReactNode {
+  const [map, setMap] = useState<MetroMap | null>(null);
+  const [route, setRoute] = useState<Route | null>(null);
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
+  const [mode, setMode] = useState<CameraMode>("orbit");
+  const [message, setMessage] = useState("Upload a top-down idiyappam photo to open NoolVerse.");
+  const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
+  const [preview, setPreview] = useState<PreviewKind>(null);
+  const [pendingImage, setPendingImage] = useState<string | null>(null);
+  const [revealStage, setRevealStage] = useState<"skeleton" | "tracks" | null>(null);
+
+  const open = useCallback(async (id: string) => {
+    const response = await fetch(`/backend/api/maps/${id}`);
+    const value = await response.json() as MetroMap;
+    if (!response.ok) throw new Error("Saved map unavailable");
+    setMap(value);
+    setRoute(null);
+    setOrigin(value.graph.nodes[0]?.id ?? "");
+    setDestination(value.graph.nodes[1]?.id ?? value.graph.nodes[0]?.id ?? "");
+  }, []);
+
+  const upload = useCallback(async (file: File) => {
+    setPendingImage(URL.createObjectURL(file));
+    setMessage("Input received. OpenCV is looking for actual noodle paths…");
+    try {
+      const body = new FormData();
+      body.append("image", file);
+      const response = await fetch("/backend/api/maps", { method: "POST", body });
+      const data = await response.json() as { id?: string; message?: string };
+      if (!response.ok || !data.id) throw new Error(data.message ?? "Map creation failed");
+      await open(data.id);
+      setRevealStage("skeleton");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Processing failed");
+      setPendingImage(null);
+    }
+  }, [open]);
+
+  const useDemo = useCallback(async () => {
+    setMessage("Loading the NMRL demonstration breakfast…");
+    const response = await fetch("/demo/idiyappam-demo.png");
+    const image = await response.blob();
+    await upload(new File([image], "idiyappam-demo.png", { type: "image/png" }));
+  }, [upload]);
+
+  useEffect(() => { if (initialMapId) void open(initialMapId); }, [initialMapId, open]);
+  useEffect(() => {
+    if (!map || !revealStage) return;
+    const delay = revealStage === "skeleton" ? 1050 : 950;
+    const timer = window.setTimeout(() => setRevealStage(revealStage === "skeleton" ? "tracks" : null), delay);
+    return () => window.clearTimeout(timer);
+  }, [map, revealStage]);
+  useEffect(() => { const saved = window.localStorage.getItem("nmrl-layers"); if (saved) try { setLayers({ ...DEFAULT_LAYERS, ...JSON.parse(saved) as Partial<Layers> }); } catch {} }, []);
+  useEffect(() => { window.localStorage.setItem("nmrl-layers", JSON.stringify(layers)); }, [layers]);
+  useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === "Escape") setPreview(null); }; window.addEventListener("keydown", close); return () => window.removeEventListener("keydown", close); }, []);
+
+  const plan = useCallback(async () => {
+    if (!map) return;
+    try {
+      const response = await fetch(`/backend/api/maps/${map.id}/route`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ origin_id: origin, destination_id: destination }) });
+      const value = await response.json() as Route;
+      if (!response.ok) throw new Error(value.warning ?? "Journey planning failed");
+      setRoute(value);
+    } catch (error) {
+      setRoute({ status: "no_route", node_ids: [], edge_ids: [], total_length_px: 0, warning: error instanceof Error ? error.message : "Journey planning failed" });
+    }
+  }, [destination, map, origin]);
+
+  if (!map) return <main className="control-room"><header className="topbar"><div className="brand-mark">≋</div><div><p className="wordmark">NOOLU PIDICHAAL MATHI <span>· NMRL</span></p><p className="brand-tagline">Vazhi ariyille? Noolu pidichaal mathi.</p></div><p className="system-status"><span />NMRL services needlessly operational</p></header><section className="launch"><p className="eyebrow">NOOLU METRO RAIL LIMITED</p><h1>From idiyappam to an unnecessarily serious metro.</h1><p>{message}</p>{pendingImage ? <img className="launch-input-preview" src={pendingImage} alt="Uploaded idiyappam being processed" /> : null}<div className="launch-actions"><label className="gold-button">Upload your idiyappam<input aria-label="Upload idiyappam photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={(event: ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (file) void upload(file); }} hidden /></label><button className="demo-button" onClick={() => void useDemo()}><img src="/demo/idiyappam-demo.png" alt="NMRL demo idiyappam" /><span>Use the official NMRL demo breakfast →</span></button></div></section></main>;
+
+  if (revealStage) return <ProcessingReveal map={map} stage={revealStage} />;
+  const active = new Set(route?.edge_ids ?? []), imageUrl = `/backend/api/maps/${map.id}/image`, names = namesFor(map.graph), toggle = (key: LayerKey) => setLayers((current) => ({ ...current, [key]: !current[key] }));
+  return <main className="control-room"><header className="topbar"><div className="brand-mark">≋</div><div><p className="wordmark">NOOLU PIDICHAAL MATHI <span>· NMRL</span></p><p className="brand-tagline">Vazhi ariyille? Noolu pidichaal mathi.</p></div><p className="system-status"><span />NMRL services needlessly operational</p></header><section className="explorer-shell"><LayersPanel map={map} imageUrl={imageUrl} active={active} layers={layers} onLayer={toggle} onPreview={setPreview} /><div className="world-panel"><div className="world-heading"><div><p className="eyebrow">NOOLU METRO RAIL LIMITED</p><h2>NoolVerse operations map</h2></div><div className="view-tabs"><button className={mode === "orbit" ? "active" : ""} onClick={() => setMode("orbit")}>Orbit</button><button className={mode === "top" ? "active" : ""} onClick={() => setMode("top")}>Top view</button><button className={mode === "cinematic" ? "active" : ""} onClick={() => setMode("cinematic")}>Cinematic</button></div></div><div className="world-canvas"><MetroWorld map={map} route={route} imageUrl={imageUrl} mode={mode} layers={layers} names={names} /></div><footer className="world-footer"><span>Tracks follow visible noodle geometry</span><span>Crossings are inferred</span></footer></div><Journey map={map} route={route} origin={origin} destination={destination} onOrigin={(id) => { setOrigin(id); setRoute(null); }} onDestination={(id) => { setDestination(id); setRoute(null); }} onPlan={() => void plan()} names={names} /></section><Preview kind={preview} map={map} imageUrl={imageUrl} active={active} onClose={() => setPreview(null)} /></main>;
+}
