@@ -94,22 +94,37 @@ def _assign_lines(
     for edge in topology.edges:
         edges_by_component[component_by_node[edge.from_node_id]].append(edge.id)
 
+    edge_by_id = {edge.id: edge for edge in topology.edges}
     line_by_edge: dict[str, str] = {}
     line_definitions: dict[str, tuple[list[str], int]] = {}
     line_index = 0
     for component_id in sorted(edges_by_component):
-        edge_ids = sorted(edges_by_component[component_id])
-        # Dense idiyappam is deliberately shown as several readable services.
-        # Five edges per service keeps the line legend useful without collapsing
-        # the source-supported network into one or two coloured strands.
-        service_count = min(5, max(1, (len(edge_ids) + 4) // 5))
-        for service_index in range(service_count):
+        remaining = set(edges_by_component[component_id])
+        adjacency: dict[str, list[str]] = defaultdict(list)
+        for edge_id in remaining:
+            edge = edge_by_id[edge_id]
+            adjacency[edge.from_node_id].append(edge_id)
+            adjacency[edge.to_node_id].append(edge_id)
+        while remaining:
+            # A service is grown through connected edges, never by unrelated ID order.
+            queue = deque((min(remaining),))
+            assigned: list[str] = []
+            while queue and len(assigned) < 5:
+                edge_id = queue.popleft()
+                if edge_id not in remaining:
+                    continue
+                remaining.remove(edge_id)
+                assigned.append(edge_id)
+                edge = edge_by_id[edge_id]
+                for node_id in (edge.from_node_id, edge.to_node_id):
+                    queue.extend(
+                        candidate
+                        for candidate in sorted(adjacency[node_id])
+                        if candidate in remaining
+                    )
             line_index += 1
             line_id = f"line-{line_index}"
-            start = service_index * len(edge_ids) // service_count
-            end = (service_index + 1) * len(edge_ids) // service_count
-            assigned = edge_ids[start:end]
-            line_definitions[line_id] = (assigned, service_index)
+            line_definitions[line_id] = (assigned, (line_index - 1) % 3)
             line_by_edge.update({edge_id: line_id for edge_id in assigned})
     return line_by_edge, line_definitions
 
