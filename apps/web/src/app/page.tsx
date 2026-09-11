@@ -2,12 +2,12 @@
 
 import { Html, OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { CatmullRomCurve3, Color, DoubleSide, Mesh, TubeGeometry, Vector3 } from "three";
+import { CatmullRomCurve3, Color, DoubleSide, Group, TubeGeometry, Vector3 } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 
 type Point = { x: number; y: number };
 type Node = { id: string; name: string; position: Point; kind: "terminal" | "station" | "interchange"; confidence: number };
-type Edge = { id: string; points: Point[]; line_id: string; elevation_level: number };
+type Edge = { id: string; from_node_id: string; to_node_id: string; points: Point[]; line_id: string; elevation_level: number };
 type Line = { id: string; color: string; name: string };
 type Graph = { nodes: Node[]; edges: Edge[]; lines: Line[] };
 type MetroMap = { id: string; graph: Graph; image_width: number; image_height: number };
@@ -24,13 +24,15 @@ function toWorld(point: Point, map: MetroMap, elevation = 0): Vector3 {
 
 function Rail({ edge, graph, map, active }: { edge: Edge; graph: Graph; map: MetroMap; active: boolean }): ReactNode {
   const line = graph.lines.find((item) => item.id === edge.line_id);
-  const elevation = 0.24 + edge.elevation_level * 0.28;
+  const elevation = 0.72 + edge.elevation_level * 0.48;
   const curve = useMemo(() => new CatmullRomCurve3(edge.points.map((point) => toWorld(point, map, elevation))), [edge.points, elevation, map]);
-  const geometry = useMemo(() => new TubeGeometry(curve, Math.max(18, Math.min(180, edge.points.length)), active ? 0.15 : 0.11, 10, false), [active, curve, edge.points.length]);
+  const deck = useMemo(() => new TubeGeometry(curve, Math.max(18, Math.min(180, edge.points.length)), active ? 0.19 : 0.16, 8, false), [active, curve, edge.points.length]);
+  const rail = useMemo(() => new TubeGeometry(curve, Math.max(18, Math.min(180, edge.points.length)), active ? 0.13 : 0.1, 8, false), [active, curve, edge.points.length]);
   const color = active ? "#ff9d24" : line?.color ?? "#2dd4ff";
   return <group>
-    <mesh geometry={geometry} castShadow><meshStandardMaterial color={color} emissive={new Color(color)} emissiveIntensity={active ? 1.8 : 0.8} roughness={0.25} metalness={0.6} /></mesh>
-    {active ? <mesh geometry={geometry} scale={1.22}><meshBasicMaterial color={color} transparent opacity={0.16} /></mesh> : null}
+    <mesh geometry={deck} castShadow><meshStandardMaterial color="#161b1e" roughness={0.36} metalness={0.85} /></mesh>
+    <mesh geometry={rail} scale={[1.03, 1.03, 1.03]}><meshStandardMaterial color={color} emissive={new Color(color)} emissiveIntensity={active ? 1.8 : 0.85} roughness={0.18} metalness={0.82} /></mesh>
+    {active ? <mesh geometry={rail} scale={[1.34, 1.34, 1.34]}><meshBasicMaterial color={color} transparent opacity={0.14} /></mesh> : null}
   </group>;
 }
 
@@ -42,16 +44,19 @@ function Plate({ imageUrl, map }: { imageUrl: string; map: MetroMap }): ReactNod
   texture.colorSpace = "srgb";
   return <group>
     <mesh position={[0, -0.24, 0]} receiveShadow><cylinderGeometry args={[Math.max(width, height) * 0.59, Math.max(width, height) * 0.59, 0.32, 96]} /><meshStandardMaterial color="#e9d7b7" roughness={0.28} metalness={0.06} /></mesh>
-    <mesh rotation-x={-Math.PI / 2} position={[0, -0.06, 0]}><planeGeometry args={[width, height]} /><meshStandardMaterial map={texture} roughness={0.72} side={DoubleSide} /></mesh>
+    <mesh rotation-x={-Math.PI / 2} position={[0, -0.06, 0]}><planeGeometry args={[width, height, 64, 64]} /><meshStandardMaterial map={texture} bumpMap={texture} bumpScale={0.12} roughness={0.66} side={DoubleSide} /></mesh>
   </group>;
 }
 
-function Station({ node, map, selected }: { node: Node; map: MetroMap; selected: boolean }): ReactNode {
-  const height = node.kind === "interchange" ? 0.72 : 0.42;
+function Station({ node, map, graph, selected }: { node: Node; map: MetroMap; graph: Graph; selected: boolean }): ReactNode {
+  const incident = graph.edges.filter((edge) => edge.from_node_id === node.id || edge.to_node_id === node.id);
+  const level = Math.max(0, ...incident.map((edge) => edge.elevation_level));
+  const height = 0.72 + level * 0.48 + (node.kind === "interchange" ? 0.34 : 0);
   const radius = node.kind === "interchange" ? 0.2 : 0.14;
   return <group position={toWorld(node.position, map, height)}>
     <mesh position={[0, -height / 2, 0]} castShadow><cylinderGeometry args={[0.045, 0.065, height, 8]} /><meshStandardMaterial color="#3f3730" roughness={0.58} metalness={0.66} /></mesh>
-    <mesh><cylinderGeometry args={[radius, radius, 0.08, 32]} /><meshStandardMaterial color={selected ? "#fff3c4" : "#f6e6cc"} emissive={selected ? "#ff9d24" : "#8bdcff"} emissiveIntensity={selected ? 2 : 0.62} roughness={0.22} metalness={0.6} /></mesh>
+    <mesh><cylinderGeometry args={[radius * 1.35, radius * 1.35, 0.1, 32]} /><meshStandardMaterial color="#20272a" roughness={0.42} metalness={0.8} /></mesh>
+    <mesh position={[0, 0.07, 0]}><cylinderGeometry args={[radius, radius, 0.08, 32]} /><meshStandardMaterial color={selected ? "#fff3c4" : "#f6e6cc"} emissive={selected ? "#ff9d24" : "#8bdcff"} emissiveIntensity={selected ? 2 : 0.62} roughness={0.22} metalness={0.6} /></mesh>
     <mesh position={[0, 0.055, 0]} rotation-x={Math.PI / 2}><torusGeometry args={[radius * 0.7, 0.024, 8, 28]} /><meshBasicMaterial color={selected ? "#ff9d24" : "#e9f7ff"} /></mesh>
     <Html position={[0, 0.25, 0]} center distanceFactor={9} occlude><span className="station-label">{node.name}</span></Html>
   </group>;
@@ -60,15 +65,18 @@ function Station({ node, map, selected }: { node: Node; map: MetroMap; selected:
 function CameraDirector({ mode }: { mode: CameraMode }): ReactNode {
   const { camera } = useThree();
   const destination = useMemo(() => mode === "top" ? new Vector3(0, 15, 0.01) : mode === "cinematic" ? new Vector3(10, 8, 10) : new Vector3(8, 7, 8), [mode]);
-  useFrame((_, delta) => { camera.position.lerp(destination, Math.min(1, delta * 3.5)); camera.lookAt(0, 0, 0); });
+  const transition = useRef(0);
+  useEffect(() => { transition.current = 1; }, [mode]);
+  useFrame((_, delta) => { if (transition.current <= 0) return; camera.position.lerp(destination, Math.min(1, delta * 3.5)); camera.lookAt(0, 0, 0); transition.current -= delta; });
   return null;
 }
 
-function NoolExpress({ edge, map, enabled }: { edge: Edge | undefined; map: MetroMap; enabled: boolean }): ReactNode {
-  const train = useRef<Mesh>(null);
-  const curve = useMemo(() => edge ? new CatmullRomCurve3(edge.points.map((point) => toWorld(point, map, 0.42))) : null, [edge, map]);
-  useFrame(({ clock }) => { if (!train.current || !curve || !enabled) return; const progress = (clock.getElapsedTime() * 0.1) % 1; const point = curve.getPointAt(progress); const ahead = curve.getPointAt((progress + 0.015) % 1); train.current.position.copy(point); train.current.lookAt(ahead.x, point.y, ahead.z); });
-  return curve ? <mesh ref={train} visible={enabled} castShadow><boxGeometry args={[0.38, 0.15, 0.2]} /><meshStandardMaterial color="#f7eee0" emissive="#ff7d1a" emissiveIntensity={0.7} metalness={0.8} roughness={0.22} /></mesh> : null;
+function NoolExpress({ edge, map, color, offset = 0 }: { edge: Edge | undefined; map: MetroMap; color: string; offset?: number }): ReactNode {
+  const train = useRef<Group>(null);
+  const elevation = 0.95 + (edge?.elevation_level ?? 0) * 0.48;
+  const curve = useMemo(() => edge ? new CatmullRomCurve3(edge.points.map((point) => toWorld(point, map, elevation))) : null, [edge, elevation, map]);
+  useFrame(({ clock }) => { if (!train.current || !curve) return; const progress = (clock.getElapsedTime() * 0.07 + offset) % 1; const point = curve.getPointAt(progress); const ahead = curve.getPointAt((progress + 0.012) % 1); train.current.position.copy(point); train.current.lookAt(ahead.x, point.y, ahead.z); });
+  return curve ? <group ref={train}><mesh position={[0, 0.08, 0]}><boxGeometry args={[0.62, 0.2, 0.24]} /><meshStandardMaterial color="#dfe9e7" metalness={0.9} roughness={0.22} /></mesh><mesh position={[0, 0.11, 0.125]}><boxGeometry args={[0.46, 0.09, 0.016]} /><meshStandardMaterial color="#102b39" emissive="#1ccfff" emissiveIntensity={0.8} /></mesh><mesh position={[-0.24, 0.08, 0.135]}><boxGeometry args={[0.08, 0.16, 0.018]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} /></mesh><mesh position={[0.24, 0.08, 0.135]}><boxGeometry args={[0.08, 0.16, 0.018]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} /></mesh><pointLight position={[0.34, 0.08, 0]} color="#fff2bc" intensity={2.5} distance={2} /></group> : null;
 }
 
 function MetroWorld({ map, route, imageUrl, cameraMode }: { map: MetroMap; route: Route | null; imageUrl: string; cameraMode: CameraMode }): ReactNode {
@@ -78,7 +86,7 @@ function MetroWorld({ map, route, imageUrl, cameraMode }: { map: MetroMap; route
   return <Canvas shadows dpr={[1, 1.5]} camera={{ position: [8, 7, 8], fov: 44 }}>
     <color attach="background" args={["#090c0e"]} /><fog attach="fog" args={["#090c0e", 12, 24]} /><ambientLight intensity={1.25} color="#c7e6ff" /><directionalLight position={[5, 10, 4]} intensity={3.1} color="#ffe1ab" castShadow /><pointLight position={[-4, 4, -2]} intensity={13} color="#36d9ff" distance={12} />
     <CameraDirector mode={cameraMode} /><Suspense fallback={null}><Plate imageUrl={imageUrl} map={map} /></Suspense>
-    {map.graph.edges.map((edge) => <Rail key={edge.id} edge={edge} graph={map.graph} map={map} active={activeEdges.has(edge.id)} />)}{map.graph.nodes.map((node) => <Station key={node.id} node={node} map={map} selected={selectedNodes.has(node.id)} />)}<NoolExpress edge={routeEdge} map={map} enabled={route?.status === "ok"} />
+    {map.graph.edges.map((edge) => <Rail key={edge.id} edge={edge} graph={map.graph} map={map} active={activeEdges.has(edge.id)} />)}{map.graph.nodes.map((node) => <Station key={node.id} node={node} map={map} graph={map.graph} selected={selectedNodes.has(node.id)} />)}<NoolExpress edge={routeEdge} map={map} color="#ff9d24" />{map.graph.edges.slice(1, 4).map((edge, index) => <NoolExpress key={edge.id} edge={edge} map={map} color={map.graph.lines.find((line) => line.id === edge.line_id)?.color ?? "#00d9ff"} offset={(index + 1) * 0.23} />)}
     <OrbitControls makeDefault enablePan enableDamping enableRotate={cameraMode === "orbit"} target={[0, 0, 0]} maxPolarAngle={Math.PI / 2.05} minDistance={4} maxDistance={20} />
   </Canvas>;
 }
