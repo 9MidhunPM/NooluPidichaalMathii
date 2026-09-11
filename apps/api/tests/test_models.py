@@ -12,6 +12,7 @@ def test_map_record_declares_versioned_graph_storage() -> None:
         "schema_version",
         "pipeline_version",
         "image_path",
+        "skeleton_path",
         "image_width",
         "image_height",
         "settings",
