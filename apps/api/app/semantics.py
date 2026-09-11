@@ -8,20 +8,28 @@ from app.topology import TopologyGraph
 LINE_COLORS = ("#00D9FF", "#FF6B6B", "#F6C453", "#74D99F", "#A78BFA")
 LINE_NAMES = (
     "Nool Express",
-    "Coconut Connector",
-    "Curry Circular",
-    "Chutney Link",
-    "Steam Service",
+    "Chutney Changeover",
+    "Steam Engine, No Engine",
+    "Gravy Train",
+    "The Last Strand",
 )
 STATION_NAMES = (
-    "Edappally Appam Exchange",
-    "Kaloor Kadala Junction",
-    "Vyttila Vermicelli",
-    "Palarivattom Puttu Port",
-    "Maharaja Masala Mile",
-    "Aluva Ada Terminal",
-    "JLN Jaggery Junction",
-    "MG Road Muringa",
+    "Thiruvanantha-Puttu Central",
+    "Kozhi-Code Red Chutney",
+    "Thrissur Pooram of Porotta",
+    "Kollam, Let's Roll-appam",
+    "Kannur Kneadn't Wait",
+    "Malappuram Masala Junction",
+    "Palakkad Pal-appam Pass",
+    "Alappuzha All-Appam Aboard",
+    "Kottayam Kappa Connection",
+    "Kasaragod Kasa-Roll Gate",
+    "Idukki Idli Interchange",
+    "Wayanad Way-A-Noodle",
+    "Pathanamthitta Patha-Naan Stop",
+    "Muvattupuzha Mooli Point",
+    "Ponnani Puttu Pier",
+    "Manjeri Mango-Masala Mile",
 )
 STATION_QUALIFIERS = (
     "Platform",
@@ -179,10 +187,12 @@ def _line_name(index: int, seed: int) -> str:
 
 def _unique_display_name(names: tuple[str, ...], index: int, seed: int) -> str:
     """Return a deterministic, collision-safe display name for a map."""
-    absolute_index = seed + index
-    base = names[absolute_index % len(names)]
-    cycle = absolute_index // len(names)
+    base = names[(seed + index) % len(names)]
+    cycle = index // len(names)
     if cycle == 0:
         return base
-    qualifier = STATION_QUALIFIERS[(cycle - 1) % len(STATION_QUALIFIERS)]
-    return f"{base} {qualifier}"
+    words: list[str] = []
+    while cycle:
+        cycle, digit = divmod(cycle - 1, len(STATION_QUALIFIERS))
+        words.append(STATION_QUALIFIERS[digit])
+    return f"{base} {' / '.join(reversed(words))}"

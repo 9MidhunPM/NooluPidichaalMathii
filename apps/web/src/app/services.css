@@ -1,0 +1,20 @@
+.service-board { margin-top: 22px; border-top: 1px solid #3c655d; padding-top: 18px; }
+.service-board h3 { margin: 8px 0; font-size: 1.2rem; }
+.service-board p { color: #bcd2cc; font-size: .76rem; line-height: 1.6; }
+.service-board .simulation-label { color: #ace76c; font-weight: 700; }
+.service-detail { margin-top: 10px; border: 1px solid #315a55; border-radius: 8px; padding: 12px; background: #0c2429; }
+.service-detail summary { display: flex; align-items: center; gap: 9px; cursor: pointer; font-size: .8rem; }
+.service-detail summary > span:last-child { margin-left: auto; color: #aee6d0; white-space: nowrap; font-size: .65rem; }
+.service-dot { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; }
+.service-detail dl { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.service-detail dt { font-size: .65rem; color: #afc4c0; }
+.service-detail dd { margin: 4px 0 0; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.departure-times { padding: 9px; background: #112c25; box-shadow: inset 0 -2px 0 #afe162; }
+.noodle-notice { padding: 14px; margin-top: 16px; border: 1px dashed #8cc052; border-radius: 8px; }
+.noodle-notice > span { color: #ace76c; font-size: .6rem; letter-spacing: .07em; }
+.noodle-notice p { color: #effbe7; font-size: .85rem; }
+.passenger-charter { margin-top: 14px; font-size: .8rem; }
+.passenger-charter summary { cursor: pointer; color: #aee6d0; }
+.passenger-charter ul { padding-left: 18px; line-height: 1.7; color: #bcd2cc; }
+.passenger-charter li { margin-bottom: 8px; }
+@media (max-width: 860px) { .journey-panel { max-height: 42dvh; } .journey-panel .journey-card { display: block; } }

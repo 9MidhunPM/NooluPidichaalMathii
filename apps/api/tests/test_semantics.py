@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from app.contracts import ImagePoint, MetroGraph
-from app.semantics import assign_metro_semantics
+from app.semantics import STATION_NAMES, _unique_display_name, assign_metro_semantics
 from app.skeleton import SkeletonResult
 from app.topology import TopologyEdge, TopologyGraph, TopologyNode, extract_graph
 
@@ -18,8 +18,8 @@ def test_assign_metro_semantics_creates_a_contract_valid_graph() -> None:
 
     assert isinstance(graph, MetroGraph)
     assert [node.name for node in graph.nodes] == [
-        "Edappally Appam Exchange",
-        "Kaloor Kadala Junction",
+        "Thiruvanantha-Puttu Central",
+        "Kozhi-Code Red Chutney",
     ]
     assert [node.kind for node in graph.nodes] == ["terminal", "terminal"]
     assert graph.lines[0].name == "Nool Express"
@@ -39,6 +39,12 @@ def test_assign_metro_semantics_is_stable_for_the_same_seed() -> None:
 def test_assign_metro_semantics_rejects_negative_seeds() -> None:
     with pytest.raises(ValueError, match="non-negative"):
         assign_metro_semantics(a_line_topology(), seed=-1)
+
+
+def test_city_names_remain_unique_without_digits_for_large_seeds() -> None:
+    names = [_unique_display_name(STATION_NAMES, i, 4_000_000_007) for i in range(1000)]
+    assert len(set(names)) == 1000
+    assert all(not any(char.isdigit() for char in name) for name in names)
 
 
 def test_assign_metro_semantics_splits_dense_curated_edges_into_services() -> None:
@@ -109,4 +115,4 @@ def test_assign_metro_semantics_generates_unique_names_for_dense_maps() -> None:
     graph = assign_metro_semantics(TopologyGraph(nodes, edges), seed=0)
 
     assert len({node.name for node in graph.nodes}) == len(graph.nodes)
-    assert graph.nodes[8].name == "Edappally Appam Exchange Platform"
+    assert graph.nodes[8].name == "Kottayam Kappa Connection"

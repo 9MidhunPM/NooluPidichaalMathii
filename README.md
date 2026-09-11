@@ -6,31 +6,29 @@
 
 ## Basic Details
 
-### Team Name
-
-Team details pending final hackathon submission.
+### Team Name: Popcorn
 
 ### Team Members
 
-- Team lead: Midhun P M — institution details pending
+- Team Lead: Midhun P M — Sahrdaya College of Engineering
 
 ### Project Description
 
-Noolu Pidichaal Mathi turns a top-down idiyappam photograph into an absurdly
-serious metro system. The application extracts visible noodle paths, creates a
-deterministic graph, and presents it as NoolVerse: a navigable 3D transit
-network with stations, routes, and tiny trains.
+Noolu Pidichaal Mathi turns an idiyappam photograph into an absurdly official
+metro network. It extracts visible strands, reveals the intermediate skeleton,
+builds a deterministic graph, and lets a visitor plan a journey through
+**NoolVerse**, the 3D world of NMRL — Noolu Metro Rail Limited.
 
 ### The Problem (that doesn't exist)
 
-Breakfast has no reliable public transport. A traveller stuck at Coconut
-Junction cannot confidently reach Curry Sector before the chutney gets cold.
+Breakfast has no reliable public transport. A passenger at Kottayam Kappa
+Connection cannot reach Kozhi-Code Red Chutney before the sambar gets cold.
 
 ### The Solution (that nobody asked for)
 
-Treat idiyappam strands as verified transit infrastructure. The system shows
-what it detected, labels uncertain crossings honestly, calculates a route over
-visible paths, and lets the visitor ride the Nool Express.
+We promote visible idiyappam paths to public infrastructure. The app reveals the
+source image, skeleton, chosen paths, graph, stations, routes, trains, and a
+fictional NMRL timetable. Crossings a single photo cannot prove remain inferred.
 
 ## Technical Details
 
@@ -39,87 +37,115 @@ visible paths, and lets the visitor ride the Nool Express.
 For Software:
 
 - TypeScript, Python, SQL
-- Next.js, FastAPI, PostgreSQL
-- React Three Fiber, Drei, OpenCV, scikit-image, NetworkX, SQLAlchemy
+- Next.js, React, FastAPI, PostgreSQL
+- React Three Fiber, Drei, Three.js
+- OpenCV, scikit-image, NumPy, SQLAlchemy, asyncpg
 - pnpm, uv, Vitest, pytest, Ruff, mypy, Docker Compose, Dokploy
 
 For Hardware:
 
-- No dedicated hardware; image processing runs on the server and NoolVerse runs
-  in a WebGL-capable browser.
+- No dedicated hardware. Image processing runs in FastAPI; NoolVerse uses a
+  WebGL-capable browser with a usable 2D fallback.
 
 ### Implementation
 
-The current foundation provides a typed Next.js shell, a typed FastAPI service,
-versioned metro graph validation, PostgreSQL persistence models, and automated
-checks. Image extraction, routing, 3D rendering, and deployment are active
-implementation milestones.
+The pipeline normalizes an uploaded image, segments visible noodle regions,
+skeletonizes them, extracts a versioned graph, assigns deterministic NMRL
+semantics, and persists the result. The Next.js client stages source → skeleton
+→ selected metro paths before entering the 3D explorer. Timetables and
+announcements are labelled as fictional IST simulation data, never KMRL advice.
 
-#### Installation
+For Software:
+
+# Installation
 
 ```bash
 pnpm install
 cd apps/api && uv sync
 ```
 
-#### Run
+# Run
 
 ```bash
-# Terminal 0: starts PostgreSQL locally; data is retained in a named volume.
+# Terminal 0 — PostgreSQL with retained local data
 docker compose -f compose.dev.yml up -d postgres
 
-# Terminal 1
+# Terminal 1 — web app
 pnpm --filter @noolu/web dev
 
-# Terminal 2
+# Terminal 2 — API
 cd apps/api
 cp .env.example .env
-# Change DATABASE_URL to use localhost when the API runs outside Compose.
-# DATABASE_URL=postgresql+asyncpg://noolu:change-me@localhost:5432/noolu
 uv run alembic upgrade head
 uv run uvicorn app.main:app --reload
 ```
 
-#### Verify
+# Verify
 
 ```bash
-pnpm --filter @noolu/web run check
-pnpm --filter @noolu/web run test
+pnpm --filter @noolu/web check
+pnpm --filter @noolu/web test
+pnpm --filter @noolu/web build
 cd apps/api && uv run ruff check app tests && uv run mypy && uv run pytest
 ```
 
-To stop the local database without removing its data, run
-`docker compose -f compose.dev.yml stop postgres`. Use
-`docker compose -f compose.dev.yml down -v` only when deliberately discarding
-local development data.
+### Project Documentation
 
-## Project Documentation
+For Software:
 
-### Workflow
+Read the [Kerala city-name and timetable policy](docs/city-names.md) for the
+deterministic naming rules and the distinction between NMRL jokes and real
+transport information.
+
+# Screenshots (Add at least 3)
+
+Real runtime captures will be stored in `docs/screenshots/`:
+
+1. Upload and progressive source → skeleton → metro reveal.
+2. Expanded source, skeleton, and source-aligned chosen-path evidence.
+3. NoolVerse route, labelled stations, map layers, train, and NMRL timetable.
+
+No concept art or mock images are passed off as product screenshots. The
+[screenshot manifest](docs/screenshots/README.md) records the required captures.
+
+# Diagrams
 
 ```mermaid
 flowchart LR
-    A[Idiyappam photo] --> B[FastAPI vision pipeline]
-    B --> C[Versioned metro graph]
-    C --> D[PostgreSQL and image volume]
-    C --> E[Next.js and NoolVerse]
-    E --> F[Route planner and train journey]
+    A[Idiyappam image] --> B[Normalize and segment]
+    B --> C[Skeleton and visible strands]
+    C --> D[Versioned metro graph]
+    D --> E[Deterministic NMRL semantics]
+    E --> F[PostgreSQL and upload volume]
+    E --> G[Next.js fallback and NoolVerse]
+    G --> H[Route planner, train, and timetable]
 ```
 
-### Screenshots
+For Hardware:
 
-Screenshots will be added after the interactive upload, route, and NoolVerse
-milestones are complete. They will use real runtime captures and clearly label
-any synthetic data.
+# Schematic & Circuit
 
-## Project Demo
+Not applicable: this is a software-only breakfast transit authority.
 
-The demo video will be recorded after the complete upload-to-train journey is
-implemented and verified.
+# Build Photos
+
+Not applicable: the only construction material is idiyappam topology.
+
+### Project Demo
+
+# Video
+
+Live demo: [idiyappam.midhunpm.in](https://idiyappam.midhunpm.in)
+
+# Additional Demos
+
+- [Repository](https://github.com/9MidhunPM/NooluPidichaalMathii)
+- [Kerala station naming and fictional timetable policy](docs/city-names.md)
 
 ## Team Contributions
 
-- Midhun P M: product direction and implementation
+- **Midhun P M:** product direction, visual system, deterministic image-to-graph
+  pipeline, API, frontend, 3D explorer, testing, deployment, and documentation.
 
 ---
 
