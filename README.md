@@ -1,8 +1,11 @@
 <img width="1280" height="640" alt="git (1)" src="https://github-production-user-asset-6210df.s3.amazonaws.com/18164052/644430708-8920b256-2ba8-4988-b824-5351134eb4bd.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20260912%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260912T002710Z&X-Amz-Expires=300&X-Amz-Signature=285d4e7809d536ab3523b3d6ba8f2ea3d40bf603fe03633e25964588e5c7a1c0&X-Amz-SignedHeaders=host&response-content-type=image%2Fpng" />
 
-# Noolu Pidichaal Mathi 🎯
+# Noolu Pidichaal Mathi — NMRL: Noolu Metro Rail Limited 🎯
 
 > **Vazhi ariyille? Noolu pidichaal mathi.**
+
+> **NMRL official motto:** *From noodles to new horizons, one suspiciously
+> well-connected breakfast at a time.*
 
 ## Basic Details
 
@@ -63,6 +66,18 @@ For Hardware:
 - No dedicated hardware. Image processing runs in FastAPI; NoolVerse uses a
   WebGL-capable browser with a usable 2D fallback.
 
+#### NMRL technical operations manual
+
+| NMRL division | Real system behind the joke | What it does before breakfast gets cold |
+| --- | --- | --- |
+| **Image Intake Depot** | FastAPI + Pillow | Validates JPEG/PNG/WebP uploads, strips metadata, bounds dimensions, and normalizes the image. |
+| **Visible Strand Authority** | OpenCV + scikit-image + NumPy | Segments the idiyappam, cleans the mask, and produces the one-pixel skeleton shown to passengers. |
+| **Track Allocation Board** | Deterministic topology extraction | Clusters endpoints and junctions, traces ordered polylines, preserves components, and refuses to invent hidden noodle continuity. |
+| **NMRL Naming Committee** | Seeded metro semantics | Assigns stable Kerala breakfast-city station names, line colours, service states, and elevation levels without asking an LLM for directions. |
+| **Journey Department** | Weighted graph routing | Calculates routes across persisted nodes and edges, including route warnings when the noodles simply do not connect. |
+| **NoolVerse Works** | Next.js + React Three Fiber + Three.js | Builds the source-aligned plate, rails, stations, labels, train, layer controls, evidence views, and camera modes in the browser. |
+| **Archive and Operations** | PostgreSQL + Docker Compose + Dokploy | Persists validated graph JSON and images, serves health endpoints, and keeps NMRL unnecessarily operational on the public web. |
+
 ### Implementation
 
 The pipeline normalizes an uploaded image, segments visible noodle regions,
@@ -83,6 +98,24 @@ announcements are labelled as fictional IST simulation data, never KMRL advice.
 4. **NoolVerse:** the chosen paths become rails above the original image. Pick
    two stations, light the route, and watch the Nool Express make a gravy train
    of it.
+
+#### The route from photo to public infrastructure
+
+```text
+idiyappam photo
+  → validation + normalization
+  → foreground segmentation
+  → cleaned binary mask
+  → one-pixel skeleton
+  → endpoints, junctions, and ordered visible edges
+  → versioned metro graph
+  → stable NMRL lines, stations, elevations, and puns
+  → route planner + NoolVerse 3D metro
+```
+
+Tracks follow visible image geometry. Where a photograph cannot establish which
+noodle continues under a crossing, NMRL marks an inference instead of appointing
+itself Minister of Pasta Certainty.
 
 #### Service conditions
 
@@ -133,7 +166,7 @@ Read the [Kerala city-name and timetable policy](docs/city-names.md) for the
 deterministic naming rules and the distinction between NMRL jokes and real
 transport information.
 
-# Screenshots
+# Screenshots (Add at least 3)
 
 These are real captures from the deployed demo using the known-good idiyappam
 image. No concept art is presented as product evidence.
@@ -189,6 +222,14 @@ Not applicable: the only construction material is idiyappam topology.
 
 # Video
 
+Watch the NMRL inaugural service:
+[Noolu Pidichaal Mathi demo recording](https://drive.google.com/file/d/1rwYPr8LkjTjSmfGVUpbbirlhuR85sfRH/view?usp=sharing)
+
+The recording follows the complete NMRL premise: a real idiyappam becomes
+visible computer-vision evidence, then a coloured metro network, then a
+routeable NoolVerse where a train takes breakfast infrastructure far too
+seriously.
+
 Live demo: [idiyappam.midhunpm.in](https://idiyappam.midhunpm.in)
 
 ### Five-stop demo journey
@@ -206,6 +247,7 @@ Live demo: [idiyappam.midhunpm.in](https://idiyappam.midhunpm.in)
 
 - [Repository](https://github.com/9MidhunPM/NooluPidichaalMathii)
 - [Kerala station naming and fictional timetable policy](docs/city-names.md)
+- [NMRL inaugural service recording](https://drive.google.com/file/d/1rwYPr8LkjTjSmfGVUpbbirlhuR85sfRH/view?usp=sharing)
 
 ## Team Contributions
 
