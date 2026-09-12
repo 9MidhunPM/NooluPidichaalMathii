@@ -19,6 +19,12 @@ metro network. It extracts visible strands, reveals the intermediate skeleton,
 builds a deterministic graph, and lets a visitor plan a journey through
 **NoolVerse**, the 3D world of NMRL — Noolu Metro Rail Limited.
 
+### Official Passenger Advisory
+
+Please keep all coconut, chutney, and existential doubts behind the yellow
+turmeric line. NMRL is the only metro authority whose network map begins as
+breakfast and whose delays are measured in noodle-centimetres.
+
 ### The Problem (that doesn't exist)
 
 Breakfast has no reliable public transport. A passenger at Kottayam Kappa
@@ -29,6 +35,16 @@ Connection cannot reach Kozhi-Code Red Chutney before the sambar gets cold.
 We promote visible idiyappam paths to public infrastructure. The app reveals the
 source image, skeleton, chosen paths, graph, stations, routes, trains, and a
 fictional NMRL timetable. Crossings a single photo cannot prove remain inferred.
+
+### Why NMRL deserves absolutely no funding
+
+- **Evidence before elevation:** every selected rail begins on a visible noodle
+  path, because even imaginary infrastructure needs receipts.
+- **A transport system with carbs:** routes get coloured services, Kerala-city
+  breakfast puns, interchange roofs, a tiny Nool Express, and public notices
+  written by somebody who has spent too long near sambar.
+- **Serious software, unserious destination:** OpenCV, graph routing, and a 3D
+  explorer do the work; the final stop is emotional support chutney.
 
 ## Technical Details
 
@@ -54,6 +70,26 @@ skeletonizes them, extracts a versioned graph, assigns deterministic NMRL
 semantics, and persists the result. The Next.js client stages source → skeleton
 → selected metro paths before entering the 3D explorer. Timetables and
 announcements are labelled as fictional IST simulation data, never KMRL advice.
+
+#### How breakfast gets a transport department
+
+1. **Boarding:** upload a clear, mostly top-down idiyappam photo, or use the
+   official NMRL demo breakfast when the photographer has missed the train.
+2. **Track extraction:** OpenCV finds visible noodle regions and reduces them to
+   a one-pixel skeleton. The skeleton is shown before the rails arrive, because
+   trust is the first class of travel.
+3. **Network approval:** deterministic graph logic chooses nodes, routes,
+   colours, elevations, and distinctly unreasonable station names.
+4. **NoolVerse:** the chosen paths become rails above the original image. Pick
+   two stations, light the route, and watch the Nool Express make a gravy train
+   of it.
+
+#### Service conditions
+
+NMRL timetable times, journey lengths, service alerts, and platform
+announcements are fictional entertainment data. The app does not operate a real
+metro, sell tickets, or guarantee that a train will wait while you fetch more
+coconut milk.
 
 For Software:
 
@@ -108,7 +144,8 @@ image. No concept art is presented as product evidence.
 
 The source photograph remains under the rails while the explorer exposes map
 layers, camera modes, journey controls, a calculated route, and fictional NMRL
-departures in one interactive view.
+departures in one interactive view. The planned path glows; the rest of the
+network politely stops pretending it is the main character.
 
 ### From visible strands to selected metro paths
 
@@ -122,7 +159,8 @@ departures in one interactive view.
 ![Evidence viewer showing colored metro paths aligned with the source idiyappam](apps/web/public/screenshots/source-aligned-evidence.webp)
 
 The [screenshot manifest](docs/screenshots/README.md) records capture dimensions,
-provenance, and what each image verifies.
+provenance, and what each image verifies. In other words: no random spaghetti
+architecture was harmed in the making of this metro.
 
 # Diagrams
 
@@ -152,6 +190,17 @@ Not applicable: the only construction material is idiyappam topology.
 # Video
 
 Live demo: [idiyappam.midhunpm.in](https://idiyappam.midhunpm.in)
+
+### Five-stop demo journey
+
+1. Open the site and click **Use the official NMRL demo breakfast**.
+2. Watch the source image hold its ground while the system processes it.
+3. Inspect the OpenCV skeleton, then the coloured metro paths it selected.
+4. Enter NoolVerse, enable labels if you want the full Kerala breakfast atlas,
+   and choose any two stations.
+5. Press **Show selected journey**. The route glows, the Nool Express rolls,
+   and the service board tells you exactly when a fictional train will not be
+   late for a very real breakfast.
 
 # Additional Demos
 
