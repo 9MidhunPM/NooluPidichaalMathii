@@ -3,6 +3,7 @@
 import type { ChangeEvent, ReactNode } from "react";
 
 import "./landing.css";
+import "./screenshot-gallery.css";
 
 type LandingPageProps = {
   message: string;
@@ -115,16 +116,17 @@ export function LandingPage({ message, pendingImage, onUpload, onDemo }: Landing
       <section className="proof-section" id="proof">
         <div className="proof-intro"><p>NMRL EVIDENCE OFFICE</p><h2>The tracks cannot simply vibe their way across the plate.</h2><p>Every rail keeps the source-image coordinates that produced it. Visitors can compare the photograph, the full skeleton and the selected metro paths at any time.</p><div className="honesty-stamp">CROSSINGS<br /><strong>INFERRED</strong><br />NOT MAGIC</div></div>
         <div className="evidence-strip">
-          <figure><div className="evidence-image"><img src="/demo/idiyappam-demo.png" alt="Original top-down idiyappam demo photograph" /></div><figcaption><b>Source photograph</b><span>Ground truth stays under the railway.</span></figcaption></figure>
-          <figure><div className="evidence-image skeleton-card"><img src="/demo/idiyappam-demo.png" alt="Idiyappam prepared for visible-strand extraction" /><span className="scan-line" /></div><figcaption><b>Visible-strand survey</b><span>One-pixel routes expose topology.</span></figcaption></figure>
-          <figure><div className="evidence-image"><BreakfastMap /></div><figcaption><b>Metro interpretation</b><span>Only selected paths earn rail status.</span></figcaption></figure>
+          <figure><div className="evidence-image"><img src="/screenshots/detected-skeleton.webp" width="1264" height="1060" loading="lazy" alt="Runtime view of the one-pixel skeleton extracted from the idiyappam" /></div><figcaption><b>Detected skeleton</b><span>The visible strand network before metro planning.</span></figcaption></figure>
+          <figure><div className="evidence-image"><img src="/screenshots/selected-metro-paths.webp" width="1461" height="1267" loading="lazy" alt="Runtime evidence viewer showing metro paths selected from the noodle skeleton" /></div><figcaption><b>Selected metro paths</b><span>Useful connected strands receive deterministic lines.</span></figcaption></figure>
+          <figure><div className="evidence-image"><img src="/screenshots/source-aligned-evidence.webp" width="1470" height="1263" loading="lazy" alt="Runtime evidence viewer showing colored routes aligned with the source idiyappam" /></div><figcaption><b>Source alignment</b><span>Every coloured trace stays in original image coordinates.</span></figcaption></figure>
         </div>
       </section>
 
       <section className="feature-section">
         <header className="feature-title"><NoolLogo /><div><p>WELCOME TO NOOLVERSE</p><h2>A city raised<br />above breakfast.</h2></div></header>
         <div className="feature-ledger">{features.map(([title, copy], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{copy}</p></article>)}</div>
-        <div className="world-poster"><div className="poster-sky"><span className="poster-moon">N</span><div className="poster-track track-a"/><div className="poster-track track-b"/><div className="poster-station station-a">CHUTNEY EXCHANGE</div><div className="poster-station station-b">COCONUT JUNCTION</div><div className="poster-train">NMRL</div></div><div className="poster-caption"><b>NOOLVERSE</b><span>Interactive 3D explorer · Built in the browser</span></div></div>
+        <figure className="world-poster real-product-shot"><img src="/screenshots/noolverse-route-planned.webp" width="2000" height="1176" loading="lazy" alt="NoolVerse runtime with map layers, 3D stations, a planned route and the fictional NMRL service board" /><figcaption className="poster-caption"><b>NOOLVERSE</b><span>Real runtime · 403 noodle-centimetres · one extremely necessary journey</span></figcaption></figure>
+        <figure className="operations-detail"><div><p>LIVE OPERATIONS DESK</p><h3>The whole breakfast bureaucracy, in one view.</h3><span>Toggle source evidence, inspect stations, change camera modes, plan a route and read the entirely fictional departure board without leaving the explorer.</span></div><img src="/screenshots/noolverse-operations.webp" width="2000" height="1164" loading="lazy" alt="Wide runtime capture of the NoolVerse operations map before a route is selected" /></figure>
       </section>
 
       <section className="tech-section">

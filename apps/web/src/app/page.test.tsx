@@ -15,4 +15,8 @@ test("introduces the product and upload journey", () => {
   expect(screen.getByLabelText("Upload idiyappam photo")).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Five departments. One overqualified breakfast." })).toBeVisible();
   expect(screen.getByRole("heading", { name: "Actual engineering. Questionable civic priority." })).toBeVisible();
+  expect(screen.getByRole("img", { name: /NoolVerse runtime with map layers/ })).toHaveAttribute(
+    "src",
+    "/screenshots/noolverse-route-planned.webp",
+  );
 });
