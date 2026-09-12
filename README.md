@@ -97,16 +97,32 @@ Read the [Kerala city-name and timetable policy](docs/city-names.md) for the
 deterministic naming rules and the distinction between NMRL jokes and real
 transport information.
 
-# Screenshots (Add at least 3)
+# Screenshots
 
-Real runtime captures will be stored in `docs/screenshots/`:
+These are real captures from the deployed demo using the known-good idiyappam
+image. No concept art is presented as product evidence.
 
-1. Upload and progressive source → skeleton → metro reveal.
-2. Expanded source, skeleton, and source-aligned chosen-path evidence.
-3. NoolVerse route, labelled stations, map layers, train, and NMRL timetable.
+### NoolVerse route and operations
 
-No concept art or mock images are passed off as product screenshots. The
-[screenshot manifest](docs/screenshots/README.md) records the required captures.
+![NoolVerse operations map with a planned 403 noodle-centimetre journey, map layers, stations, and the fictional NMRL service board](apps/web/public/screenshots/noolverse-route-planned.webp)
+
+The source photograph remains under the rails while the explorer exposes map
+layers, camera modes, journey controls, a calculated route, and fictional NMRL
+departures in one interactive view.
+
+### From visible strands to selected metro paths
+
+<p align="center">
+  <img width="48%" alt="One-pixel skeleton extracted from the idiyappam" src="apps/web/public/screenshots/detected-skeleton.webp" />
+  <img width="48%" alt="Metro paths selected from the noodle skeleton" src="apps/web/public/screenshots/selected-metro-paths.webp" />
+</p>
+
+### Source-aligned evidence
+
+![Evidence viewer showing colored metro paths aligned with the source idiyappam](apps/web/public/screenshots/source-aligned-evidence.webp)
+
+The [screenshot manifest](docs/screenshots/README.md) records capture dimensions,
+provenance, and what each image verifies.
 
 # Diagrams
 
